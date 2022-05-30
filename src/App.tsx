@@ -9,6 +9,7 @@ const nodeOutput = (callback: (args?: any) => any) => Promise.resolve(callback)
 const VisualNode = (props: {
   index: number,
   title?: string,
+  attrs: any,
   inputs?: Array<{}>,
   outputs?: Array<{}>,
   nodes: Array<{}>,
@@ -19,27 +20,28 @@ const VisualNode = (props: {
   const [inputs, setInputs] = useState<Array<{}> | undefined>(props.inputs);
   const [outputs, setOutputs] = useState<Array<{}> | undefined>(props.outputs);
 
-  const getNode = () => {
+  const getNodes = () => {
     const newNodes = [...props.nodes.map(node => ({...node}))];
     return newNodes;
   }
 
-  const handleChange = () => {
-    const newNodes = getNode();
+  const handleChange = (key: string, value: string) => {
+    const newNodes = getNodes();
     const node: any = newNodes[props.index - 1];
-    node.attrs.innerHTML = value;
+    key === "innerHTML" ? node.attrs[key] = {__html: value} : node.attrs[key] =  value;
+    console.log(node.attrs);
     props.setNodes(newNodes);
   }
 
   const handleMouseOver = () => {
-    const newNodes = getNode();
+    const newNodes = getNodes();
     const node: any = newNodes[props.index - 1];
     node.hilighted = true;
     props.setNodes(newNodes);
   }
 
   const handleMouseOut = () => {
-    const newNodes = getNode();
+    const newNodes = getNodes();
     const node: any = newNodes[props.index - 1];
     node.hilighted = false;
     props.setNodes(newNodes);
@@ -64,7 +66,6 @@ const VisualNode = (props: {
         display: "inline-block",
         minHeight: "150px",
         minWidth: "200px",
-        margin: "5px",
         border: "1px solid black",
         borderRadius: "5px",
         background: "white"
@@ -83,15 +84,26 @@ const VisualNode = (props: {
         {title}
       </span>
       <div>
-        innerHTML:
-        <input
-          type={"text"}
-          defaultValue={value}
-          onChange={(ev) => {
-            setValue(ev.target.value);
-          }}
-          onKeyUp={() => handleChange()}
-        />
+        {Object.keys(props.attrs).map((key, _) => {
+          return (
+            <span 
+              style={{
+                display: "block"
+              }}
+            >
+              {key}: 
+              <input
+                type={"text"}
+                defaultValue={props.attrs[key]}
+                // onChange={(ev) => {
+                //   setValue(ev.target.value);
+                // }}
+                //@ts-ignore
+                onKeyUp={(ev) => handleChange(key, ev.target.value)}
+              />
+            </span>
+          )
+        })}
       </div>
       <div></div>
     </div>
@@ -99,19 +111,26 @@ const VisualNode = (props: {
   )
 }
 
-const nodes = [
-  {
-    "key": 1,
-    "name": "",
-    "attrs": 
-      {
-        "innerHTML": ""
-      }
+interface NodeData {
+  index: number,
+  title: string,
+  hilighted: boolean,
+  children: [],
+  attrs: {
+    innerHTML: { __html: string } | undefined,
+    position?: string | undefined,
+    display?: string | undefined,
+    width?: number | string,
+    height?: number | string
+    top?: number | string,
+    left?: number | string,
+    right?: number | string,
+    bottom?: number | string
   }
-]
+}
 
 const App = () => {
-  const [nodes, setNodes] = useState([
+  const [nodes, setNodes] = useState<NodeData[]>([
     {
       "index": 1,
       "title": "a <span>",
@@ -119,7 +138,9 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": ""
+        "innerHTML": undefined,
+        "position": "absolute",
+        "left": "20px"
       }
     },
     {
@@ -129,7 +150,7 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": ""
+        "innerHTML": undefined,
       }
     }
   ])
@@ -146,14 +167,13 @@ const App = () => {
             <span
               style={{
                 display: "block",
+                position: "relative",
                 marginLeft: "5px",
+                left: node.attrs.left || 0,
                 background: node.hilighted ? "lightgreen" : "none"
               }}
+              dangerouslySetInnerHTML={node.attrs.innerHTML}
             >
-              {node.attrs.innerHTML}
-              {node.children?.map(child => {
-                return child
-              })}
             </span>
           )
         })}
@@ -164,7 +184,8 @@ const App = () => {
           width: "100%",
           minHeight: "300px",
           bottom: "0px",
-          border: "1px solid black",
+          borderTop: "1px solid black",
+          background: "lightgrey",
           overflow: "scroll",
         }}
       >
@@ -173,6 +194,7 @@ const App = () => {
               <VisualNode 
                 index={node.index}
                 title={node.title}
+                attrs={node.attrs}
                 nodes={nodes}
                 setNodes={setNodes}
               />
