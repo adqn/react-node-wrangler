@@ -63,7 +63,9 @@ const VisualNode = (props: {
     <div
       className="VisualNode"
       style={{
+        // position: "absolute",
         display: "inline-block",
+        // left: `${150 * props.index}px`,
         minHeight: "150px",
         minWidth: "200px",
         border: "1px solid black",
@@ -138,7 +140,7 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": undefined,
+        "innerHTML": {__html: "some text"},
         "position": "absolute",
         "left": "20px"
       }
@@ -150,7 +152,9 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": undefined,
+        "innerHTML": {__html: "some text"},
+        "position": "absolute",
+        "left": "0px"
       }
     }
   ])
