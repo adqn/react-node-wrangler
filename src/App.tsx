@@ -6,6 +6,19 @@ const testFunc = () => "some output"
 
 const nodeOutput = (callback: (args?: any) => any) => Promise.resolve(callback)
 
+const getValue = ({props, key}: {props: any, key: any}) => {
+  let defaultValue = props.attrs[key];
+  const isFromSink = !!(defaultValue.index && defaultValue.attr)
+
+  if (isFromSink) {
+    //@ts-ignore
+    defaultValue = props.nodes[defaultValue.index - 1].attrs[defaultValue.attr];
+    console.log(defaultValue);
+  }
+
+  return [defaultValue, isFromSink];
+};
+
 const VisualNode = (props: {
   index: number,
   title?: string,
@@ -48,12 +61,12 @@ const VisualNode = (props: {
   }
 
   useEffect(() => {
-    const setInput = async (callback: (args: any) => any) => {
-      const input = await nodeOutput(callback)
-      console.log(input())
-    }
+    // const setInput = async (callback: (args: any) => any) => {
+    //   const input = await nodeOutput(callback)
+    //   console.log(input())
+    // }
 
-    setInput(testFunc)
+    // setInput(testFunc)
   }, [])
 
   return (
@@ -65,9 +78,9 @@ const VisualNode = (props: {
       style={{
         // position: "absolute",
         display: "inline-block",
-        // left: `${150 * props.index}px`,
+        // left: `${150 + (props.index * 5)}px`,
         minHeight: "150px",
-        minWidth: "200px",
+        minWidth: "150px",
         border: "1px solid black",
         borderRadius: "5px",
         background: "white"
@@ -87,6 +100,7 @@ const VisualNode = (props: {
       </span>
       <div>
         {Object.keys(props.attrs).map((key, _) => {
+          const [defaultValue, isFromSink] = getValue({props, key});
           return (
             <span 
               style={{
@@ -94,15 +108,19 @@ const VisualNode = (props: {
               }}
             >
               {key}: 
+              {isFromSink ? defaultValue : (
               <input
-                type={"text"}
-                defaultValue={props.attrs[key]}
-                // onChange={(ev) => {
-                //   setValue(ev.target.value);
-                // }}
-                //@ts-ignore
-                onKeyUp={(ev) => handleChange(key, ev.target.value)}
-              />
+              type={"text"}
+              defaultValue={defaultValue}
+              // onChange={(ev) => {
+              //   setValue(ev.target.value);
+              // }}
+              //@ts-ignore
+              onKeyUp={(ev) => handleChange(key, ev.target.value)}
+            />
+
+              )
+              }
             </span>
           )
         })}
@@ -132,7 +150,7 @@ interface NodeData {
 }
 
 const App = () => {
-  const [nodes, setNodes] = useState<NodeData[]>([
+  const [nodes, setNodes] = useState<any[]>([
     {
       "index": 1,
       "title": "a <span>",
@@ -140,9 +158,12 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": {__html: "some text"},
+        "innerHTML": {__html: "what"},
         "position": "absolute",
-        "left": "20px"
+        "left": {
+          index: 4,
+          attr: "c"
+        }
       }
     },
     {
@@ -156,6 +177,28 @@ const App = () => {
         "position": "absolute",
         "left": "0px"
       }
+    },
+    {
+      "index": 3,
+      "title": "yet another <span>",
+      "hilighted": false,
+      "children": [],
+      "attrs":
+      {
+        "innerHTML": {__html: "some text"},
+        "position": "absolute",
+        "left": "0px"
+      }
+    },
+    {
+      "index": 4,
+      "title": "constant",
+      "hilighted": false,
+      "children": [],
+      "attrs":
+      {
+        "c": "20px",
+      }
     }
   ])
 
@@ -167,13 +210,13 @@ const App = () => {
       }}
       >
         {nodes?.map(node => {
-          return (
+          return node.attrs.innerHTML && (
             <span
               style={{
                 display: "block",
                 position: "relative",
                 marginLeft: "5px",
-                left: node.attrs.left || 0,
+                left: getValue({props: {attrs: {...node.attrs}, nodes}, key: 'left'})[0] || 0,
                 background: node.hilighted ? "lightgreen" : "none"
               }}
               dangerouslySetInnerHTML={node.attrs.innerHTML}
