@@ -111,7 +111,7 @@ const VisualNode = (props: {
               {isFromSink ? defaultValue : (
               <input
               type={"text"}
-              defaultValue={defaultValue}
+              defaultValue={defaultValue.__html}
               // onChange={(ev) => {
               //   setValue(ev.target.value);
               // }}
@@ -131,7 +131,7 @@ const VisualNode = (props: {
   )
 }
 
-interface NodeData {
+interface NodeData<T> {
   index: number,
   title: string,
   hilighted: boolean,
