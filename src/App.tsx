@@ -6,14 +6,13 @@ const testFunc = () => "some output"
 
 const nodeOutput = (callback: (args?: any) => any) => Promise.resolve(callback)
 
-const getValue = ({props, key}: {props: any, key: any}) => {
+const getValue = ({props, key}: {props: {attrs: NodeData["attrs"], nodes: NodeData[]}, key: string}): [string | number | undefined, boolean] => {
   let defaultValue = props.attrs[key];
-  const isFromSink = !!(defaultValue.index && defaultValue.attr)
+  let isFromSink = false;
 
-  if (isFromSink) {
-    //@ts-ignore
+  while (typeof defaultValue === "object") {
+    isFromSink = true;
     defaultValue = props.nodes[defaultValue.index - 1].attrs[defaultValue.attr];
-    console.log(defaultValue);
   }
 
   return [defaultValue, isFromSink];
@@ -22,14 +21,13 @@ const getValue = ({props, key}: {props: any, key: any}) => {
 const VisualNode = (props: {
   index: number,
   title?: string,
-  attrs: any,
+  attrs: NodeAttrs,
   inputs?: Array<{}>,
   outputs?: Array<{}>,
-  nodes: Array<{}>,
+  nodes: Array<NodeData>,
   setNodes: any
 }) => {
   const [title, setTitle] = useState<string | undefined>(props.title);
-  const [value, setValue] = useState<any>();
   const [inputs, setInputs] = useState<Array<{}> | undefined>(props.inputs);
   const [outputs, setOutputs] = useState<Array<{}> | undefined>(props.outputs);
 
@@ -41,7 +39,7 @@ const VisualNode = (props: {
   const handleChange = (key: string, value: string) => {
     const newNodes = getNodes();
     const node: any = newNodes[props.index - 1];
-    key === "innerHTML" ? node.attrs[key] = {__html: value} : node.attrs[key] =  value;
+    node.attrs[key] = value;
     console.log(node.attrs);
     props.setNodes(newNodes);
   }
@@ -111,7 +109,7 @@ const VisualNode = (props: {
               {isFromSink ? defaultValue : (
               <input
               type={"text"}
-              defaultValue={defaultValue.__html}
+              defaultValue={defaultValue}
               // onChange={(ev) => {
               //   setValue(ev.target.value);
               // }}
@@ -131,26 +129,35 @@ const VisualNode = (props: {
   )
 }
 
-interface NodeData<T> {
+interface HTMLNodeAttrs {
+  innerHTML?: string,
+  position?: string,
+  display?: string,
+  width?: number | string,
+  height?: number | string
+  top?: number | string,
+  left?: number | string,
+  right?: number | string,
+  bottom?: number | string
+}
+
+interface NodeAttrs {
+  [key: string]: undefined | number | string | {
+    index: number,
+    attr: string,
+  }
+}
+
+interface NodeData {
   index: number,
   title: string,
   hilighted: boolean,
   children: [],
-  attrs: {
-    innerHTML: { __html: string } | undefined,
-    position?: string | undefined,
-    display?: string | undefined,
-    width?: number | string,
-    height?: number | string
-    top?: number | string,
-    left?: number | string,
-    right?: number | string,
-    bottom?: number | string
-  }
+  attrs: NodeAttrs,
 }
 
 const App = () => {
-  const [nodes, setNodes] = useState<any[]>([
+  const [nodes, setNodes] = useState<NodeData[]>([
     {
       "index": 1,
       "title": "a <span>",
@@ -158,12 +165,12 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": {__html: "what"},
-        "position": "absolute",
-        "left": {
+        "innerHTML": {
           index: 4,
-          attr: "c"
-        }
+          attr: "c",
+        },
+        "position": "absolute",
+        "left": "20px",
       }
     },
     {
@@ -173,7 +180,7 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": {__html: "some text"},
+        "innerHTML": "some text",
         "position": "absolute",
         "left": "0px"
       }
@@ -185,7 +192,7 @@ const App = () => {
       "children": [],
       "attrs":
       {
-        "innerHTML": {__html: "some text"},
+        "innerHTML": "some text",
         "position": "absolute",
         "left": "0px"
       }
@@ -219,7 +226,7 @@ const App = () => {
                 left: getValue({props: {attrs: {...node.attrs}, nodes}, key: 'left'})[0] || 0,
                 background: node.hilighted ? "lightgreen" : "none"
               }}
-              dangerouslySetInnerHTML={node.attrs.innerHTML}
+              dangerouslySetInnerHTML={{__html: `${getValue({props: {attrs: {...node.attrs}, nodes}, key: 'innerHTML'})[0]}`}}
             >
             </span>
           )
