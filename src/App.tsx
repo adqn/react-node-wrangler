@@ -123,7 +123,7 @@ const VisualNode = (props: {
                   marginLeft: "5px"
                 }}
               >
-                {isFromSink ? "-> " + key + ": " + defaultValue : (
+                {isFromSink ? `-> ${key}: ${defaultValue}` : (
                   <span>
                     {key}:{" "}
                     <input
