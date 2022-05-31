@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import { BaseNode, NodeDefinition } from "./nodes/abstractNode";
+import { NodeDefinition } from "./nodes/baseNode";
+import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
-import { NodeView } from "./nodes/VisualNode";
+import { NodeView } from "./nodes/NodeView";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
     [ConstantNode.name]: ConstantNode,
+    [AddNode.name]: AddNode,
+    [MultiplyNode.name]: MultiplyNode,
     [HtmlNode.name]: HtmlNode,
   };
 
@@ -19,18 +22,57 @@ const App = () => {
   const [nodeDefinitions, setNodes] = useState<NodeDefinition[]>([
     {
       className: ConstantNode.name,
-      title: "constant",
+      title: "two",
       inputs: {
-        c: "foo bar",
+        c: 2,
       },
     },
     {
       className: ConstantNode.name,
-      title: "constant sink",
+      title: "four",
       inputs: {
-        c: {
+        c: 4,
+      },
+    },
+    {
+      className: AddNode.name,
+      title: "Add",
+      inputs: {
+        a: {
           index: 0,
-          attr: "string",
+          attr: "number",
+        },
+        b: {
+          index: 1,
+          attr: "number",
+        },
+      },
+    },
+    {
+      className: MultiplyNode.name,
+      title: "Multiply",
+      inputs: {
+        x: {
+          index: 0,
+          attr: "number",
+        },
+        y: {
+          index: 1,
+          attr: "number",
+        },
+      },
+    },
+    {
+      className: AddNode.name,
+      title: "AddNested",
+      inputs: {
+        a: {
+          index: 2,
+          attr: "sum",
+        },
+        b: {
+          index: 3,
+          attr: "product",
         },
       },
     },
@@ -39,8 +81,8 @@ const App = () => {
       title: "html sink",
       inputs: {
         html: {
-          index: 1,
-          attr: "string",
+          index: 4,
+          attr: "sum",
         },
       },
     },

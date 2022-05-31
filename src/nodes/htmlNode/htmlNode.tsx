@@ -3,32 +3,21 @@ import {
   NodeDefinition,
   NodeInputs,
   SinkDefinition,
-} from "../abstractNode";
+} from "../baseNode";
 
 export class HtmlNode extends BaseNode {
-  inputs: {
-    html: string | SinkDefinition;
-  };
-
-  constructor({ title, inputs }: { title: string; inputs: NodeInputs }) {
-    super({ title, inputs });
-
-    if (typeof inputs.html === "object") {
-      this.inputs = {
-        html: inputs.html,
-      };
-    } else {
-      this.inputs = {
-        html: `${inputs.html || ""}`,
-      };
+  validateInputs(): void {
+    if (typeof this.inputs.html === 'undefined') {
+        throw Error("html must be a defined input")
     }
-  }
+}
 
   outputs() {
     return {};
   }
 
   render(_: number, nodes: BaseNode[]) {
+    const {html} = this.computedInputs(nodes);
     return (
       <span
         style={{
@@ -39,7 +28,7 @@ export class HtmlNode extends BaseNode {
           background: "none",
         }}
         dangerouslySetInnerHTML={{
-          __html: this.getInputValue("html", nodes)[0],
+          __html: html,
         }}
       ></span>
     );

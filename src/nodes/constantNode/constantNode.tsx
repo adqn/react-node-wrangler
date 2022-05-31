@@ -1,34 +1,15 @@
-import { BaseNode, NodeInputs, SinkDefinition } from "../abstractNode";
+import { BaseNode } from "../baseNode";
 
 export class ConstantNode extends BaseNode {
-    inputs: {
-        c: string | SinkDefinition;
-    };
-
-    constructor({title, inputs}: {title: string, inputs: NodeInputs}) {
-        super({title, inputs});
-        
-        if (typeof inputs.c === 'object') {
-            this.inputs = {
-                c: inputs.c,
-            }
-        } else {
-            this.inputs = {
-                c: `${inputs.c || ""}`
-            };
+    validateInputs(): void {
+        if (typeof this.inputs.c === 'undefined') {
+            throw Error("c must be a defined input")
         }
     }
-
     outputs(nodes: BaseNode[]) {
-        let constant = this.inputs.c;
-
-        if (typeof constant === "object") {
-            const node = nodes[constant.index];
-            constant = node.getOutputValue(constant.attr, nodes);
-        }
-
+        const constant = this.computedInputs(nodes).c;
         return {
-            string: constant,
+            string: `${constant}`,
             number: Number(constant),
         };
     }

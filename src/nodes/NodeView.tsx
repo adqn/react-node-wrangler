@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseNode, NodeDefinition, NodeInputs, VisualNode } from "./abstractNode";
+import { BaseNode, NodeDefinition, NodeInputs, VisualNode } from "./baseNode";
 
 export const NodeView = (props: {
   nodes: BaseNode[];
@@ -24,7 +24,6 @@ export const NodeView = (props: {
           <VisualNode
             index={index}
             title={node.title}
-            inputs={node.inputs}
             nodes={props.nodes}
             setNodes={props.setNodes}
             setRenderIndex={props.setRenderIndex}

@@ -25,12 +25,12 @@ export interface NodeOutputs {
 export const VisualNode = (props: {
   index: number;
   title: string;
-  inputs: NodeInputs;
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex?: (index: number) => void;
 }) => {
   const node = props.nodes[props.index];
+  node.validateInputs(props.nodes);
   const getNodes = () => {
     const newNodes = [...props.nodes.map((node) => node.getDefinition())];
     return newNodes;
@@ -84,7 +84,7 @@ export const VisualNode = (props: {
           {props.title}
         </span>
         <div>
-          {Object.keys(props.inputs).map((key) => {
+          {Object.keys(node.inputs).map((key) => {
             const [defaultValue, isFromSink] = node.getInputValue(key, props.nodes);
             return (
               <span
@@ -132,6 +132,8 @@ export const VisualNode = (props: {
 export abstract class BaseNode {
   title: string;
   inputs: NodeInputs;
+  abstract validateInputs(nodes: BaseNode[]): void;
+  abstract outputs(nodes: BaseNode[]): NodeOutputs;
 
   constructor({ title, inputs }: { title: string; inputs: NodeInputs }) {
     this.title = title;
@@ -159,7 +161,12 @@ export abstract class BaseNode {
     return [defaultValue, isFromSink];
   }
 
-  abstract outputs(nodes: BaseNode[]): NodeOutputs;
+  computedInputs(nodes: BaseNode[]) {
+    return Object.keys(this.inputs).map((key) => [key, this.getInputValue(key, nodes)[0]]).reduce((acc: NodeOutputs, [key, value]): NodeOutputs => {
+      acc[key] = value;
+      return acc;
+    }, {});
+  }
 
   getOutputValue(key: string, nodes: BaseNode[]) {
     const outputs = this.outputs(nodes);
@@ -176,7 +183,6 @@ export abstract class BaseNode {
       <VisualNode
         index={index}
         title={this.title}
-        inputs={this.inputs}
         nodes={nodes}
         setNodes={setNodes}
       />
