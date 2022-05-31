@@ -17,10 +17,25 @@ export interface NodeDefinition {
 }
 
 type OutputValue = any;
+export type IO = 'input' | 'output';
 
 export interface NodeOutputs {
   [key: string]: OutputValue;
 }
+
+const SinkSourceIndicator = () => 
+  <div
+    style={{
+      display: "inline-block",
+      position: "relative",
+      bottom: "2px",
+      height: "5px",
+      width: "5px",
+      marginLeft: "5px",
+      backgroundColor: "green",
+      borderRadius: "50%"
+    }}
+  />
 
 export const VisualNode = (props: {
   index: number;
@@ -28,8 +43,11 @@ export const VisualNode = (props: {
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex?: (index: number) => void;
+  setBoundingBox?: (index: number, io: IO, key: string, rect: DOMRect) => void;
 }) => {
   const node = props.nodes[props.index];
+  const setBoundingBox = props.setBoundingBox ? props.setBoundingBox : () => null;
+
   // FIXME: In future, highlight bad type of input or missing inputs
   node.validateInputs(props.nodes);
   const getNodes = () => {
@@ -79,6 +97,7 @@ export const VisualNode = (props: {
           id="VisualNode header"
           style={{
             display: "block",
+            textAlign: "center",
             borderBottom: "1px solid black",
           }}
         >
@@ -93,16 +112,20 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                o {key}:
+                <span ref={(el) => {
+                  if (!el) return;
+                  setBoundingBox(props.index, 'input', key, el.getBoundingClientRect());
+                }}><SinkSourceIndicator /></span> {key}:
                 {isFromSink ? (
                   defaultValue
                 ) : (
                   <input
+                    style={{
+                      width: "60%",
+                      marginLeft: "5px"
+                    }}
                     type={"text"}
                     defaultValue={defaultValue}
-                    // onChange={(ev) => {
-                    //   setValue(ev.target.value);
-                    // }}
                     //@ts-ignore
                     onKeyUp={(ev) => handleChange(key, ev.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -120,15 +143,19 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                {key}: {value} 
+                {key}: {value}
                 <div
                   style={{
                     position: "absolute",
                     display: "inline-block",
                     right: "3px"
                   }}
+                  ref={(el) => {
+                    if (!el) return;
+                    setBoundingBox(props.index, 'output', key, el.getBoundingClientRect());
+                  }}
                 >
-                  o
+                  <SinkSourceIndicator />
                 </div>
               </span>
             );
@@ -197,5 +224,5 @@ export abstract class BaseNode {
         setNodes={setNodes}
       />
     );
-}
+  }
 }
