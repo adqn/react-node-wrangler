@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseNode, NodeDefinition, NodeInputs, VisualNode } from "./baseNode";
+import { BaseNode, NodeDefinition, VisualNode } from "./baseNode";
 
 export const NodeView = (props: {
   nodes: BaseNode[];
@@ -30,6 +30,20 @@ export const NodeView = (props: {
           />
         );
       })}
+       <div
+        className="WireOverlay"
+        style={{
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          pointerEvents: "none"
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+        >
+          <line x1="20" y1="20" x2="100" y2="100" stroke="green" stroke-width="2" />
+        </svg>
+      </div>
     </div>
   );
 };

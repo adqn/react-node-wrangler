@@ -30,6 +30,7 @@ export const VisualNode = (props: {
   setRenderIndex?: (index: number) => void;
 }) => {
   const node = props.nodes[props.index];
+  // FIXME: In future, highlight bad type of input or missing inputs
   node.validateInputs(props.nodes);
   const getNodes = () => {
     const newNodes = [...props.nodes.map((node) => node.getDefinition())];
@@ -43,7 +44,7 @@ export const VisualNode = (props: {
     props.setNodes(newNodes);
   };
 
-  const handleMouseOver = () => {
+  const handleClick = () => {
     if (props.setRenderIndex) {
       props.setRenderIndex(props.index);
     }
@@ -71,7 +72,7 @@ export const VisualNode = (props: {
           borderRadius: "5px",
           background: "white",
         }}
-        onClick={() => handleMouseOver()}
+        onClick={() => handleClick()}
       >
         <span
           className="handle"
@@ -92,7 +93,7 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                {key}:
+                o {key}:
                 {isFromSink ? (
                   defaultValue
                 ) : (
@@ -119,7 +120,16 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                {key}: {value}
+                {key}: {value} 
+                <div
+                  style={{
+                    position: "absolute",
+                    display: "inline-block",
+                    right: "3px"
+                  }}
+                >
+                  o
+                </div>
               </span>
             );
           })}
