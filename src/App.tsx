@@ -28,6 +28,7 @@ const VisualNode = (props: {
   setNodes: any
 }) => {
   const [title, setTitle] = useState<string | undefined>(props.title);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const [inputs, setInputs] = useState<Array<{}> | undefined>(props.inputs);
   const [outputs, setOutputs] = useState<Array<{}> | undefined>(props.outputs);
 
@@ -58,6 +59,12 @@ const VisualNode = (props: {
     props.setNodes(newNodes);
   }
 
+  const wireElement = () => {
+    return <div>
+      {"o"}
+    </div>
+  }
+
   useEffect(() => {
     // const setInput = async (callback: (args: any) => any) => {
     //   const input = await nodeOutput(callback)
@@ -71,60 +78,84 @@ const VisualNode = (props: {
     <Draggable
       handle={`.handle`}
     >
-    <div
-      className="VisualNode"
-      style={{
-        // position: "absolute",
-        display: "inline-block",
-        // left: `${150 + (props.index * 5)}px`,
-        minHeight: "150px",
-        minWidth: "150px",
-        border: "1px solid black",
-        borderRadius: "5px",
-        background: "white"
-      }}
-      onMouseOver={() => handleMouseOver()}
-      onMouseOut={() => handleMouseOut()}
-    >
-      <span
-        className="handle"
-        id="VisualNode header"
+      <div
+        className="VisualNode"
         style={{
-          display: "block",
-          borderBottom: "1px solid black"
+          // position: "absolute",
+          display: "inline-block",
+          // left: `${150 + (props.index * 5)}px`,
+          minHeight: "150px",
+          minWidth: "150px",
+          border: "1px solid black",
+          borderRadius: "5px",
+          background: "white"
         }}
+        onMouseOver={() => handleMouseOver()}
+        onMouseOut={() => handleMouseOut()}
       >
-        {title}
-      </span>
-      <div>
-        {Object.keys(props.attrs).map((key, _) => {
-          const [defaultValue, isFromSink] = getValue({props, key});
-          return (
-            <span 
-              style={{
-                display: "block"
-              }}
-            >
-              {key}: 
-              {isFromSink ? defaultValue : (
-              <input
-              type={"text"}
-              defaultValue={defaultValue}
-              // onChange={(ev) => {
-              //   setValue(ev.target.value);
-              // }}
-              //@ts-ignore
-              onKeyUp={(ev) => handleChange(key, ev.target.value)}
-            />
-
-              )
-              }
-            </span>
-          )
-        })}
+        <span
+          className="handle"
+          id="VisualNode header"
+          style={{
+            display: "block",
+            borderBottom: "1px solid black",
+            textAlign: "center"
+          }}
+          onMouseDown={() => {
+            setIsDragging(true);
+            // console.log("dragging")
+          }}
+          onMouseUp={() => {
+            setIsDragging(false);
+            // console.log("not dragging")
+          }}
+        >
+          {title}
+        </span>
+        <div>
+          {Object.keys(props.attrs).map((key, _) => {
+            const [defaultValue, isFromSink] = getValue({ props, key });
+            return (
+              <span
+                style={{
+                  display: "block",
+                  marginTop: "5px",
+                  marginLeft: "5px"
+                }}
+              >
+                {isFromSink ? "-> " + key + ": " + defaultValue : (
+                  <span>
+                    {key}:{" "}
+                    <input
+                      style={{
+                        width: "55%"
+                      }}
+                      type={"text"}
+                      defaultValue={defaultValue}
+                      // onChange={(ev) => {
+                      //   setValue(ev.target.value);
+                      // }}
+                      //@ts-ignore
+                      onKeyUp={(ev) => handleChange(key, ev.target.value)}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        display: "inline-block",
+                        right: "3px"
+                      }}
+                    >
+                      {"->"}
+                    </span>
+                  </span>
+                )
+                }
+              </span>
+            )
+          })}
+        </div>
+        <div></div>
       </div>
-      <div></div>
-    </div>
     </Draggable>
   )
 }
@@ -254,6 +285,20 @@ const App = () => {
               />
           )
         })}
+      <div
+        className="WireOverlay"
+        style={{
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          pointerEvents: "none"
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+        >
+          <line x1="20" y1="20" x2="100" y2="100" stroke="green" stroke-width="2" />
+        </svg>
+      </div>
       </div>
     </div>
   );
