@@ -28,6 +28,7 @@ export const VisualNode = (props: {
   inputs: NodeInputs;
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  setRenderIndex?: (index: number) => void;
 }) => {
   const node = props.nodes[props.index];
   const getNodes = () => {
@@ -43,17 +44,9 @@ export const VisualNode = (props: {
   };
 
   const handleMouseOver = () => {
-    const newNodes = getNodes();
-    const node: any = newNodes[props.index];
-    node.hilighted = true;
-    props.setNodes(newNodes);
-  };
-
-  const handleMouseOut = () => {
-    const newNodes = getNodes();
-    const node: any = newNodes[props.index];
-    node.hilighted = false;
-    props.setNodes(newNodes);
+    if (props.setRenderIndex) {
+      props.setRenderIndex(props.index);
+    }
   };
 
   useEffect(() => {
@@ -78,8 +71,7 @@ export const VisualNode = (props: {
           borderRadius: "5px",
           background: "white",
         }}
-        onMouseOver={() => handleMouseOver()}
-        onMouseOut={() => handleMouseOut()}
+        onClick={() => handleMouseOver()}
       >
         <span
           className="handle"
@@ -112,6 +104,7 @@ export const VisualNode = (props: {
                     // }}
                     //@ts-ignore
                     onKeyUp={(ev) => handleChange(key, ev.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 )}
               </span>

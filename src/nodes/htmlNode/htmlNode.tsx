@@ -1,4 +1,9 @@
-import { BaseNode, NodeInputs, SinkDefinition } from "../abstractNode";
+import {
+  BaseNode,
+  NodeDefinition,
+  NodeInputs,
+  SinkDefinition,
+} from "../abstractNode";
 
 export class HtmlNode extends BaseNode {
   inputs: {
@@ -21,5 +26,22 @@ export class HtmlNode extends BaseNode {
 
   outputs() {
     return {};
+  }
+
+  render(_: number, nodes: BaseNode[]) {
+    return (
+      <span
+        style={{
+          display: "block",
+          position: "relative",
+          marginLeft: "5px",
+          left: "0px",
+          background: "none",
+        }}
+        dangerouslySetInnerHTML={{
+          __html: this.getInputValue("html", nodes)[0],
+        }}
+      ></span>
+    );
   }
 }

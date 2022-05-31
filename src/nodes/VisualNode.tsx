@@ -4,6 +4,7 @@ import { BaseNode, NodeDefinition, NodeInputs, VisualNode } from "./abstractNode
 export const NodeView = (props: {
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  setRenderIndex: (index: number) => void;
 }) => {
   return (
     <div
@@ -26,6 +27,7 @@ export const NodeView = (props: {
             inputs={node.inputs}
             nodes={props.nodes}
             setNodes={props.setNodes}
+            setRenderIndex={props.setRenderIndex}
           />
         );
       })}

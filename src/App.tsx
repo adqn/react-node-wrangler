@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { BaseNode, NodeDefinition } from "./nodes/abstractNode";
 import { ConstantNode } from "./nodes/constantNode";
+import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
 import { NodeView } from "./nodes/VisualNode";
 
-const createNode = ({className, ...definition}: NodeDefinition) => {
+const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
     [ConstantNode.name]: ConstantNode,
-  }
+    [HtmlNode.name]: HtmlNode,
+  };
 
   const NodeClass = nodeNameMap[className];
   return new NodeClass(definition as any);
-}
+};
 
 const App = () => {
   const [nodeDefinitions, setNodes] = useState<NodeDefinition[]>([
@@ -32,22 +34,21 @@ const App = () => {
         },
       },
     },
-    // {
-    //   title: "a <span>",
-    //   hilighted: false,
-    //   children: [],
-    //   inputs: {
-    //     innerHTML: {
-    //       index: 0,
-    //       attr: "c",
-    //     },
-    //     position: "absolute",
-    //     left: "20px",
-    //   },
-    // },
-  ])
-  
+    {
+      className: HtmlNode.name,
+      title: "html sink",
+      inputs: {
+        html: {
+          index: 1,
+          attr: "string",
+        },
+      },
+    },
+  ]);
+
   const nodes = nodeDefinitions.map(createNode);
+
+  const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
 
   return (
     <div
@@ -56,37 +57,8 @@ const App = () => {
         height: "100%",
       }}
     >
-      {/* {nodes?.map((node) => {
-        return (
-          node.inputs.innerHTML && (
-            <span
-              style={{
-                display: "block",
-                position: "relative",
-                marginLeft: "5px",
-                left:
-                  getValue({
-                    props: { inputs: { ...node.inputs }, nodes },
-                    key: "left",
-                  })[0] || 0,
-                background: "none", // node.hilighted ? "lightgreen" : "none",
-              }}
-              dangerouslySetInnerHTML={{
-                __html: `${
-                  getValue({
-                    props: { inputs: { ...node.inputs }, nodes },
-                    key: "innerHTML",
-                  })[0]
-                }`,
-              }}
-            ></span>
-          )
-        );
-      })} */}
-      <NodeView
-        nodes={nodes}
-        setNodes={setNodes}
-      />
+      {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+      <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
     </div>
   );
 };
