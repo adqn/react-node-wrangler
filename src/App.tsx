@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
+import { NodeDefinition } from "./nodes/baseNode";
+import { AddNode, MultiplyNode } from "./nodes/calculationNode";
+import { ConstantNode } from "./nodes/constantNode";
+import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
-import Draggable, { DraggableCore } from 'react-draggable';
+import { NodeView } from "./nodes/NodeView";
 
-const testFunc = () => "some output"
+const createNode = ({ className, ...definition }: NodeDefinition) => {
+  const nodeNameMap = {
+    [ConstantNode.name]: ConstantNode,
+    [AddNode.name]: AddNode,
+    [MultiplyNode.name]: MultiplyNode,
+    [HtmlNode.name]: HtmlNode,
+  };
 
-const nodeOutput = (callback: (args?: any) => any) => Promise.resolve(callback)
-
-const getValue = ({props, key}: {props: {attrs: NodeData["attrs"], nodes: NodeData[]}, key: string}): [string | number | undefined, boolean] => {
-  let defaultValue = props.attrs[key];
-  let isFromSink = false;
-
-  while (typeof defaultValue === "object") {
-    isFromSink = true;
-    defaultValue = props.nodes[defaultValue.index - 1].attrs[defaultValue.attr];
-  }
-
-  return [defaultValue, isFromSink];
+  const NodeClass = nodeNameMap[className];
+  return new NodeClass(definition as any);
 };
 
+<<<<<<< HEAD
+=======
 const VisualNode = (props: {
   index: number,
   title?: string,
@@ -187,65 +189,92 @@ interface NodeData {
   attrs: NodeAttrs,
 }
 
+>>>>>>> main
 const App = () => {
-  const [nodes, setNodes] = useState<NodeData[]>([
+  const [nodeDefinitions, setNodes] = useState<NodeDefinition[]>([
     {
-      "index": 1,
-      "title": "a <span>",
-      "hilighted": false,
-      "children": [],
-      "attrs":
-      {
-        "innerHTML": {
-          index: 4,
-          attr: "c",
+      className: ConstantNode.name,
+      title: "two",
+      inputs: {
+        c: 2,
+      },
+    },
+    {
+      className: ConstantNode.name,
+      title: "four",
+      inputs: {
+        c: 4,
+      },
+    },
+    {
+      className: AddNode.name,
+      title: "Add",
+      inputs: {
+        a: {
+          index: 0,
+          attr: "number",
         },
-        "position": "absolute",
-        "left": "20px",
-      }
+        b: {
+          index: 1,
+          attr: "number",
+        },
+      },
     },
     {
-      "index": 2,
-      "title": "another <span>",
-      "hilighted": false,
-      "children": [],
-      "attrs":
-      {
-        "innerHTML": "some text",
-        "position": "absolute",
-        "left": "0px"
-      }
+      className: MultiplyNode.name,
+      title: "Multiply",
+      inputs: {
+        x: {
+          index: 0,
+          attr: "number",
+        },
+        y: {
+          index: 1,
+          attr: "number",
+        },
+      },
     },
     {
-      "index": 3,
-      "title": "yet another <span>",
-      "hilighted": false,
-      "children": [],
-      "attrs":
-      {
-        "innerHTML": "some text",
-        "position": "absolute",
-        "left": "0px"
-      }
+      className: AddNode.name,
+      title: "AddNested",
+      inputs: {
+        a: {
+          index: 2,
+          attr: "sum",
+        },
+        b: {
+          index: 3,
+          attr: "product",
+        },
+      },
     },
     {
-      "index": 4,
-      "title": "constant",
-      "hilighted": false,
-      "children": [],
-      "attrs":
-      {
-        "c": "20px",
-      }
-    }
-  ])
+      className: HtmlNode.name,
+      title: "html sink",
+      inputs: {
+        html: {
+          index: 4,
+          attr: "sum",
+        },
+      },
+    },
+  ]);
+
+  const nodes = nodeDefinitions.map(createNode);
+
+  const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
 
   return (
-    <div 
+    <div
       className="App"
       style={{
-        height: "100%"
+        height: "100%",
       }}
+<<<<<<< HEAD
+    >
+      {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+      <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
+=======
       >
         {nodes?.map(node => {
           return node.attrs.innerHTML && (
@@ -300,8 +329,9 @@ const App = () => {
         </svg>
       </div>
       </div>
+>>>>>>> main
     </div>
   );
-}
+};
 
 export default App;
