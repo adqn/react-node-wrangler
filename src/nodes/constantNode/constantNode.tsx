@@ -32,10 +32,4 @@ export class ConstantNode extends BaseNode {
             number: Number(constant),
         };
     }
-    
-    getOutputValue(key: string, nodes: BaseNode[]) {
-        const outputs = this.outputs(nodes);
-
-        return outputs[key as keyof typeof outputs];
-    }
 }
