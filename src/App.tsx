@@ -108,7 +108,16 @@ const App = () => {
         width: "0"
       }}
       minWidth={"100%"}
-      bounds={"parent"}
+      enable={{
+        top: true,
+        bottom: false,
+        right: false,
+        left: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topRight: false,
+        topLeft: false
+      }}
     >
       <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
     </Resizable>
