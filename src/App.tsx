@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Resizable } from 're-resizable';
 import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
@@ -95,12 +96,22 @@ const App = () => {
   return (
     <div
       className="App"
-      style={{
-        height: "100%",
-      }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+    <Resizable
+      style={{
+        position: "absolute",
+        bottom: "5px",
+      }}
+      defaultSize={{
+        height: "400px",
+        width: "0"
+      }}
+      minWidth={"100%"}
+      bounds={"parent"}
+    >
       <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
+    </Resizable>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { AnyTxtRecord } from "dns";
 import React, { useState } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
@@ -9,28 +8,28 @@ const WireOverlay = (props: {
   y2?: number | string
 }) =>
   <div
-  className="WireOverlay"
-  style={{
-    position: "absolute",
-    top: "0px",
-    left: "0px",
-    pointerEvents: "none",
-    width: "100%",
-    height: "100%",
-  }}
->
-  <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
-    width="100%"
-    height="100%"
+    className="WireOverlay"
+    style={{
+      position: "absolute",
+      top: "0px",
+      left: "0px",
+      pointerEvents: "none",
+      width: "100%",
+      height: "100%",
+    }}
   >
-    <line 
-      x1={props.x1}
-      y1={props.y1}
-      x2={props.x2}
-      y2={props.y2}
-      stroke="green" stroke-width="2" />
-  </svg>
-</div>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+      width="100%"
+      height="100%"
+    >
+      <line
+        x1={props.x1}
+        y1={props.y1}
+        x2={props.x2}
+        y2={props.y2}
+        stroke="green" stroke-width="2" />
+    </svg>
+  </div>
 
 interface boundingBoxes {
   [indexIoKey: string]: DOMRect;
@@ -48,17 +47,17 @@ export const NodeView = (props: {
 }) => {
   const [boundingBoxes, setBoundingBoxes] = useState<boundingBoxes>({});
   const [nodeViewBoundingBox, setNodeViewBoundingBox] = useState<DOMRect | null>(null);
-  const getIndexIoKey = ({index, io, key}: {index: number, io: IO, key: string}) => `${index}-${io}-${key}`;
+  const getIndexIoKey = ({ index, io, key }: { index: number, io: IO, key: string }) => `${index}-${io}-${key}`;
 
   const setBoundingBox = (index: number, io: IO, key: string, rect: DOMRect) => {
-    const indexIoKey = getIndexIoKey({index, io, key})
+    const indexIoKey = getIndexIoKey({ index, io, key })
     const oldRect = boundingBoxes[indexIoKey];
 
     if (oldRect && oldRect.x === rect.x && oldRect.y === rect.y) {
       return;
     }
 
-    const newBoundingBoxes = {...boundingBoxes};
+    const newBoundingBoxes = { ...boundingBoxes };
     newBoundingBoxes[indexIoKey] = rect;
     setBoundingBoxes(newBoundingBoxes);
   };
@@ -70,10 +69,10 @@ export const NodeView = (props: {
     <div
       className="NodeView"
       style={{
-        position: "absolute",
-        width: "100%",
-        minHeight: "400px",
-        bottom: "0px",
+        // position: "absolute",
+        // width: "100%",
+        height: `100%`,
+        // bottom: "0px",
         borderTop: "1px solid black",
         background: "lightgrey",
         overflow: "scroll",
@@ -102,10 +101,10 @@ export const NodeView = (props: {
       {props.nodes.map((node, index) => {
         return Object.entries(node.inputs).map(([key, value]) => {
           if (typeof value === 'object') {
-            const outputKey = getIndexIoKey({index: value.index, io: 'output', key: value.attr});
+            const outputKey = getIndexIoKey({ index: value.index, io: 'output', key: value.attr });
             const outRect = boundingBoxes[outputKey];
-            const inputKey = getIndexIoKey({index, io: 'input', key});
-            const inRect =boundingBoxes[inputKey];
+            const inputKey = getIndexIoKey({ index, io: 'input', key });
+            const inRect = boundingBoxes[inputKey];
 
             if (outRect && inRect && nodeViewBoundingBox) {
               const x1 = -nodeViewBoundingBox.x + outRect.x + outRect.width / 2;
@@ -125,13 +124,13 @@ export const NodeView = (props: {
       }).reduce((acc, curr) => {
         return acc.concat(curr).filter((el) => el !== null);
       }, [])
-    }
-    <WireOverlay
-                x1={"190px"}
-                y1={"648px"}
-                x2={"408px"}
-                y2={"606px"}
-              />
+      }
+      {/* <WireOverlay
+        x1={"190px"}
+        y1={"648px"}
+        x2={"408px"}
+        y2={"606px"}
+      /> */}
     </div>
   );
 };
