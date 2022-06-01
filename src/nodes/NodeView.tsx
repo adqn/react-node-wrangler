@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
 const WireOverlay = (props: {
@@ -73,7 +73,7 @@ export const NodeView = (props: {
         // width: "100%",
         height: `100%`,
         // bottom: "0px",
-        borderTop: "1px solid black",
+        borderTop: "2px solid grey",
         background: "lightgrey",
         overflow: "scroll",
       }}
@@ -107,10 +107,10 @@ export const NodeView = (props: {
             const inRect = boundingBoxes[inputKey];
 
             if (outRect && inRect && nodeViewBoundingBox) {
-              const x1 = -nodeViewBoundingBox.x + outRect.x + outRect.width / 2;
-              const x2 = -nodeViewBoundingBox.x + inRect.x + inRect.width / 2;
-              const y1 = -nodeViewBoundingBox.y + outRect.y + outRect.height / 2;
-              const y2 = -nodeViewBoundingBox.y + inRect.y + inRect.height / 2;
+              const x1 = -nodeViewBoundingBox.x + outRect.x + 2 + outRect.width / 2;
+              const x2 = -nodeViewBoundingBox.x + inRect.x + 2 + inRect.width / 2;
+              const y1 = -nodeViewBoundingBox.y + outRect.y + 1 + outRect.height / 2;
+              const y2 = -nodeViewBoundingBox.y + inRect.y + 1 + inRect.height / 2;
               return <WireOverlay
                 x1={x1}
                 y1={y1}
@@ -125,12 +125,6 @@ export const NodeView = (props: {
         return acc.concat(curr).filter((el) => el !== null);
       }, [])
       }
-      {/* <WireOverlay
-        x1={"190px"}
-        y1={"648px"}
-        x2={"408px"}
-        y2={"606px"}
-      /> */}
     </div>
   );
 };
