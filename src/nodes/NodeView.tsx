@@ -12,47 +12,84 @@ const WireOverlay = (props: {
     x1: props.x1,
     y1: props.y1,
     x2: props.x2,
-    y2: props.y2
+    y2: props.y2,
+    coords: {}
   })
-  const [selected, setSelected] = useState<boolean>(false);
 
-  const handleDragging = (ev: any) => {
-    console.log(ev.clientX, ev.clientY)
-    setPosition({
-      x1: props.x1,
-      y1: props.x2,
-      x2: ev.clientX - props.origin.x,
-      y2: ev.clientY - props.origin.y
-    })
-  }
-
-  useEffect(() => {
-    setPosition({
-      x1: props.x1,
-      y1: props.y1,
-      x2: props.x2,
-      y2: props.y2
-    })
-  }, [props.x1, props.x2, props.y1, props.y2])
-
-  return (
-    <line
-      style={{userSelect: "none"}}
-      x1={position.x1}
-      y1={position.y1}
-      x2={position.x2}
-      y2={position.y2}
-      stroke="green"
-      stroke-width="3"
-      onMouseDown={() => setSelected(true)}
-      onMouseUp={() => setSelected(false)}
-      onMouseOut={() => setSelected(false)}
-      onMouseMove={(ev) => {
-        if (selected) {
-          handleDragging(ev)}
+  const handleMouseMove = React.useRef((ev: any) => {
+    setPosition(position => {
+      //@ts-ignore
+      const xDiff = position.coords.x - ev.pageX
+      console.log(xDiff)
+      //@ts-ignore
+      const yDiff = position.coords.y - ev.pageY
+      return {
+        x1: props.x1,
+        y1: props.y1,
+        x2: position.x2 as any - xDiff,
+        y2: position.y2 as any - yDiff,
+        coords: {
+          x: ev.pageX,
+          y: ev.pageY
         }
       }
-    />
+    })
+  })
+
+  const handleMouseDown = (ev: any) => {
+    const pageX = ev.pageX
+    const pageY = ev.pageY
+    setPosition(position => 
+      Object.assign({}, position, {
+        coords: {
+          x: pageX,
+          y: pageY
+        }
+      })
+    )
+    document.addEventListener('mousemove', handleMouseMove.current)
+  }
+
+  const handleMouseUp = () => {
+    console.log("mouse up?")
+    document.removeEventListener('mousemove', handleMouseMove.current)
+    setPosition(position => Object.assign({}, position, {coords: {}}))
+
+  }
+
+  return (
+    <>
+      {/* <circle
+        cx={position.x1}
+        cy={position.y1}
+        r="10"
+        onMouseDown={(ev) => {
+          setMousePos({x: ev.clientX - props.origin.x, y: ev.clientY - props.origin.y})
+          setSelected(true)}}
+        onMouseUp={() => setSelected(false)}
+        onMouseOut={() => setSelected(false)}
+        onMouseMove={(ev) => {
+          if (selected) {
+            handleDragging(ev)
+          }
+        }}
+      /> */}
+      <circle
+        cx={position.x2}
+        cy={position.y2}
+        r="10"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      />
+      <line
+        x1={position.x1}
+        y1={position.y1}
+        x2={position.x2}
+        y2={position.y2}
+        stroke="green"
+        stroke-width="3"
+      />
+    </>
   )
 }
 
@@ -130,9 +167,7 @@ export const NodeView = (props: {
           position: "absolute",
           top: "0px",
           left: "0px",
-          // zIndex: 1
-        }}
-      >
+        }}>
         {props.nodes.map((node, index) => {
           return Object.entries(node.inputs).map(([key, value]) => {
             if (typeof value === 'object') {
@@ -159,9 +194,7 @@ export const NodeView = (props: {
           })
         }).reduce((acc, curr) => {
           return acc.concat(curr).filter((el) => el !== null);
-        }, [])
-        }
-
+        }, [])}
       </svg>
     </div>
   );
