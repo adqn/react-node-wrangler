@@ -23,15 +23,18 @@ export interface NodeOutputs {
   [key: string]: OutputValue;
 }
 
-const SinkSourceIndicator = () => 
+const SinkSourceIndicator = (props: {
+  isFromSink: boolean
+}) =>
   <div
     style={{
       display: "inline-block",
       position: "relative",
       bottom: "2px",
-      height: "5px",
-      width: "5px",
-      marginLeft: "5px",
+      height: "8px",
+      width: "8px",
+      marginLeft: props.isFromSink ? "-5px" : "0px",
+      marginRight: props.isFromSink ? "0px" : "-7px",
       backgroundColor: "green",
       borderRadius: "50%"
     }}
@@ -68,20 +71,12 @@ export const VisualNode = (props: {
     }
   };
 
-  useEffect(() => {
-    // const setInput = async (callback: (args: any) => any) => {
-    //   const input = await nodeOutput(callback)
-    //   console.log(input())
-    // }
-    // setInput(testFunc)
-  }, []);
-
   return (
     <Draggable handle={`.handle`}>
       <div
         className="VisualNode"
         style={{
-          // position: "absolute",
+          position: "relative",
           display: "inline-block",
           // left: `${150 + (props.index * 5)}px`,
           minHeight: "150px",
@@ -89,6 +84,7 @@ export const VisualNode = (props: {
           border: "1px solid black",
           borderRadius: "5px",
           background: "white",
+          zIndex: 1
         }}
         onClick={() => handleClick()}
       >
@@ -115,7 +111,7 @@ export const VisualNode = (props: {
                 <span ref={(el) => {
                   if (!el) return;
                   setBoundingBox(props.index, 'input', key, el.getBoundingClientRect());
-                }}><SinkSourceIndicator /></span> {key}:
+                }}><SinkSourceIndicator isFromSink={true} /></span> {key}:
                 {isFromSink ? (
                   defaultValue
                 ) : (
@@ -155,7 +151,7 @@ export const VisualNode = (props: {
                     setBoundingBox(props.index, 'output', key, el.getBoundingClientRect());
                   }}
                 >
-                  <SinkSourceIndicator />
+                  <SinkSourceIndicator isFromSink={false} />
                 </div>
               </span>
             );
