@@ -3,10 +3,12 @@ import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
 const WireOverlay = (props: {
   origin: any,
-  x1: number | string,
-  y1: number | string,
-  x2: number | string,
-  y2: number | string
+  boundingBoxes: boundingBoxes,
+  nodes: BaseNode[],
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
 }) => {
   const [position, setPosition] = useState({
     x1: props.x1,
@@ -15,22 +17,35 @@ const WireOverlay = (props: {
     y2: props.y2,
     coords: {}
   })
+  const [isSource, setIsSource] = useState<boolean>();
 
   const handleMouseMove = React.useRef((ev: any) => {
     setPosition(position => {
       //@ts-ignore
-      const xDiff = position.coords.x - ev.pageX
-      console.log(xDiff)
+      const xDiff = position.coords.x - ev.pageX;
       //@ts-ignore
-      const yDiff = position.coords.y - ev.pageY
-      return {
-        x1: props.x1,
-        y1: props.y1,
-        x2: position.x2 as any - xDiff,
-        y2: position.y2 as any - yDiff,
-        coords: {
-          x: ev.pageX,
-          y: ev.pageY
+      const yDiff = position.coords.y - ev.pageY;
+      if (isSource) {
+        return {
+          x1: position.x1 - xDiff,
+          y1: position.y1 - yDiff,
+          x2: props.x2,
+          y2: props.y2,
+          coords: {
+            x: ev.pageX,
+            y: ev.pageY
+          }
+        }
+      } else {
+        return {
+          x1: props.x1,
+          y1: props.y1,
+          x2: position.x2 - xDiff,
+          y2: position.y2 - yDiff,
+          coords: {
+            x: ev.pageX,
+            y: ev.pageY
+          }
         }
       }
     })
@@ -54,31 +69,39 @@ const WireOverlay = (props: {
     console.log("mouse up?")
     document.removeEventListener('mousemove', handleMouseMove.current)
     setPosition(position => Object.assign({}, position, {coords: {}}))
-
   }
+
+  useEffect(() => {
+    Object.entries(props.boundingBoxes).filter(([key, value]) => {
+      const xRange = [props.boundingBoxes[key].x - 10, props.boundingBoxes[key].x + 10];
+      const yRange = [-props.origin.y + props.boundingBoxes[key].y - 10, -props.origin.y + props.boundingBoxes[key].y + 10];
+      return position.y2 >= yRange[0] && position.y2 <= yRange[1]
+        && position.x2 >= xRange[0] && position.x2 <= xRange[1];
+    }).forEach((x) => console.log(x))
+  }, [position])
 
   return (
     <>
       {/* <circle
+        id="source"
         cx={position.x1}
         cy={position.y1}
         r="10"
-        onMouseDown={(ev) => {
-          setMousePos({x: ev.clientX - props.origin.x, y: ev.clientY - props.origin.y})
-          setSelected(true)}}
-        onMouseUp={() => setSelected(false)}
-        onMouseOut={() => setSelected(false)}
-        onMouseMove={(ev) => {
-          if (selected) {
-            handleDragging(ev)
-          }
+        onMouseDown={(ev: any) => {
+          setIsSource(true);
+          handleMouseDown(ev)
         }}
+        onMouseUp={handleMouseUp}
       /> */}
       <circle
+        id="sink"
         cx={position.x2}
         cy={position.y2}
         r="10"
-        onMouseDown={handleMouseDown}
+        onMouseDown={(ev: any) => {
+          setIsSource(false);
+          handleMouseDown(ev)
+        }}
         onMouseUp={handleMouseUp}
       />
       <line
@@ -87,7 +110,7 @@ const WireOverlay = (props: {
         x2={position.x2}
         y2={position.y2}
         stroke="green"
-        stroke-width="3"
+        strokeWidth="3"
       />
     </>
   )
@@ -182,7 +205,10 @@ export const NodeView = (props: {
                 const y1 = -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                 const y2 = -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
                 return <WireOverlay
+                  key={`${index}-${key}`}
                   origin={nodeViewBoundingBox}
+                  boundingBoxes={boundingBoxes}
+                  nodes={props.nodes}
                   x1={x1}
                   y1={y1}
                   x2={x2}

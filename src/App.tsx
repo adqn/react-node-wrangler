@@ -96,6 +96,10 @@ const App = () => {
   return (
     <div
       className="App"
+      // style={{
+      //   height: "100%",
+      //   overflow: "scroll"
+      // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
     <Resizable
