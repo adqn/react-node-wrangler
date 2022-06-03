@@ -1,8 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
+const SVGCanvas = (props: {
+  children: any
+}) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" version="2"
+      className="WireOverlay"
+      width="100%"
+      height="100%"
+      style={{
+        position: "absolute",
+        top: "0px",
+        left: "0px",
+      }}>
+      {props.children}
+    </svg>
+  )
+}
+
 const WireOverlay = (props: {
   origin: any,
+  nodeTo: BaseNode,
+  inputKey: string,
+  outputKey: string,
   boundingBoxes: boundingBoxes,
   nodes: BaseNode[],
   x1: number,
@@ -17,15 +38,22 @@ const WireOverlay = (props: {
     y2: props.y2,
     coords: {}
   })
-  const [isSource, setIsSource] = useState<boolean>();
+  const [dragging, setDragging] = useState<boolean>();
+  const [IsInput, setIsInput] = useState<boolean>();
+
+  const getNodeFromIndexIoKey = (indexIoKey: string) => {
+    const arr = indexIoKey.split("-");
+    return props.nodes[parseInt(arr[0])];
+  }
 
   const handleMouseMove = React.useRef((ev: any) => {
+    setDragging(true);
     setPosition(position => {
       //@ts-ignore
       const xDiff = position.coords.x - ev.pageX;
       //@ts-ignore
       const yDiff = position.coords.y - ev.pageY;
-      if (isSource) {
+      if (IsInput) {
         return {
           x1: position.x1 - xDiff,
           y1: position.y1 - yDiff,
@@ -61,23 +89,36 @@ const WireOverlay = (props: {
           y: pageY
         }
       })
-    )
-    document.addEventListener('mousemove', handleMouseMove.current)
+    );
+    document.addEventListener('mousemove', handleMouseMove.current);
   }
 
   const handleMouseUp = () => {
-    console.log("mouse up?")
-    document.removeEventListener('mousemove', handleMouseMove.current)
+    setDragging(false);
+    document.removeEventListener('mousemove', handleMouseMove.current);
     setPosition(position => Object.assign({}, position, {coords: {}}))
   }
 
   useEffect(() => {
-    Object.entries(props.boundingBoxes).filter(([key, value]) => {
-      const xRange = [props.boundingBoxes[key].x - 10, props.boundingBoxes[key].x + 10];
-      const yRange = [-props.origin.y + props.boundingBoxes[key].y - 10, -props.origin.y + props.boundingBoxes[key].y + 10];
-      return position.y2 >= yRange[0] && position.y2 <= yRange[1]
-        && position.x2 >= xRange[0] && position.x2 <= xRange[1];
-    }).forEach((x) => console.log(x))
+    if (dragging) {
+      let foundNode: BaseNode | undefined;
+      Object.entries(props.boundingBoxes).filter(([key, value]) => {
+        const xRange = [props.boundingBoxes[key].x - 10, props.boundingBoxes[key].x + 10];
+        const yRange = [-props.origin.y + props.boundingBoxes[key].y - 10, -props.origin.y + props.boundingBoxes[key].y + 10];
+        return position.y2 >= yRange[0] && position.y2 <= yRange[1]
+          && position.x2 >= xRange[0] && position.x2 <= xRange[1];
+      }).forEach((boundingBox) => {
+        const foundInput = boundingBox[0].split("-")[2];
+        const currentOutput = props.outputKey.split("-")[2];
+        foundNode = getNodeFromIndexIoKey(boundingBox[0]);
+        if (foundNode) {
+          if (IsInput) {
+            console.log("from: ", getNodeFromIndexIoKey(props.outputKey), "output: ", currentOutput);
+            console.log("to: ", foundNode, "input: ", foundInput);
+          }
+        }
+      })
+    }
   }, [position])
 
   return (
@@ -88,7 +129,7 @@ const WireOverlay = (props: {
         cy={position.y1}
         r="10"
         onMouseDown={(ev: any) => {
-          setIsSource(true);
+          setIsInput(false);
           handleMouseDown(ev)
         }}
         onMouseUp={handleMouseUp}
@@ -99,7 +140,7 @@ const WireOverlay = (props: {
         cy={position.y2}
         r="10"
         onMouseDown={(ev: any) => {
-          setIsSource(false);
+          setIsInput(true);
           handleMouseDown(ev)
         }}
         onMouseUp={handleMouseUp}
@@ -182,15 +223,7 @@ export const NodeView = (props: {
           />
         );
       })}
-      <svg xmlns="http://www.w3.org/2000/svg" version="2"
-        className="WireOverlay"
-        width="100%"
-        height="100%"
-        style={{
-          position: "absolute",
-          top: "0px",
-          left: "0px",
-        }}>
+      <SVGCanvas>
         {props.nodes.map((node, index) => {
           return Object.entries(node.inputs).map(([key, value]) => {
             if (typeof value === 'object') {
@@ -205,8 +238,11 @@ export const NodeView = (props: {
                 const y1 = -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                 const y2 = -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
                 return <WireOverlay
-                  key={`${index}-${key}`}
+                  key={inputKey}
                   origin={nodeViewBoundingBox}
+                  nodeTo={node}
+                  inputKey={inputKey}
+                  outputKey={outputKey}
                   boundingBoxes={boundingBoxes}
                   nodes={props.nodes}
                   x1={x1}
@@ -221,7 +257,7 @@ export const NodeView = (props: {
         }).reduce((acc, curr) => {
           return acc.concat(curr).filter((el) => el !== null);
         }, [])}
-      </svg>
+      </SVGCanvas>
     </div>
   );
 };
