@@ -1,5 +1,5 @@
 import produce, { enablePatches, applyPatches, Patch } from "immer";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
 const SVGCanvas = (props: {
@@ -27,6 +27,7 @@ const WireOverlay = (props: {
   outputKey: string,
   boundingBoxes: boundingBoxes,
   nodes: BaseNode[],
+  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>,
   x1: number,
   y1: number,
   x2: number,
@@ -42,12 +43,18 @@ const WireOverlay = (props: {
   const [dragging, setDragging] = useState<boolean>();
   const [IsInput, setIsInput] = useState<boolean>();
 
-  const getNodeFromIndexIoKey = (indexIoKey: string) => {
+  const getIndexAsJson = (indexIoKey: string) => {
     const arr = indexIoKey.split("-");
-    return props.nodes[parseInt(arr[0])];
+    const index = parseInt(arr[0])
+    return {
+      index,
+      node: props.nodes[index],
+      io: arr[1],
+      key: arr[2]
+    };
   }
 
-  const handleMouseMove = React.useRef((ev: any) => {
+  const handleMouseMove = useCallback((ev: any) => {
     setDragging(true);
     setPosition(position => {
       //@ts-ignore
@@ -78,7 +85,20 @@ const WireOverlay = (props: {
         }
       }
     })
-  })
+  }, [props.x1, props.x2, props.y1, props.y2])
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setIsInput(false);
+    document.removeEventListener('mousemove', handleMouseMove);
+    setPosition({
+      x1: props.x1,
+      y1: props.y1,
+      x2: props.x2,
+      y2: props.y2,
+      coords: position.coords,
+    });
+  };
 
   const handleMouseDown = (ev: any) => {
     const pageX = ev.pageX
@@ -91,36 +111,40 @@ const WireOverlay = (props: {
         }
       })
     );
-    document.addEventListener('mousemove', handleMouseMove.current);
-  }
-
-  const handleMouseUp = () => {
-    setDragging(false);
-    document.removeEventListener('mousemove', handleMouseMove.current);
-    setPosition(position => Object.assign({}, position, {coords: {}}))
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp, {once: true});
   }
 
   useEffect(() => {
     if (dragging) {
-      let foundNode: BaseNode | undefined;
       Object.entries(props.boundingBoxes).filter(([key, value]) => {
         const xRange = [props.boundingBoxes[key].x - 10, props.boundingBoxes[key].x + 10];
         const yRange = [-props.origin.y + props.boundingBoxes[key].y - 10, -props.origin.y + props.boundingBoxes[key].y + 10];
         return position.y2 >= yRange[0] && position.y2 <= yRange[1]
           && position.x2 >= xRange[0] && position.x2 <= xRange[1];
       }).forEach((boundingBox) => {
-        const foundInput = boundingBox[0].split("-")[2];
-        const currentOutput = props.outputKey.split("-")[2];
-        foundNode = getNodeFromIndexIoKey(boundingBox[0]);
-        if (foundNode) {
+        const foundInput = getIndexAsJson(boundingBox[0]);
+        const currentOutput = getIndexAsJson(props.outputKey);
+        const currentInput = getIndexAsJson(props.inputKey);
+        if (foundInput.node !== currentInput.node) {
           if (IsInput) {
-            console.log("from: ", getNodeFromIndexIoKey(props.outputKey), "output: ", currentOutput);
-            console.log("to: ", foundNode, "input: ", foundInput);
+            props.setNodes(produce((nodeDefinitions) => {
+              const oldInputDefinition = currentInput.node.getDefinition();
+              oldInputDefinition.inputs[currentInput.key] = '';
+              nodeDefinitions[currentInput.index] = oldInputDefinition;
+
+              const newInputDefinition = foundInput.node.getDefinition();
+              newInputDefinition.inputs[foundInput.key] = {
+                index: currentOutput.index,
+                attr: currentOutput.key,
+              };
+              nodeDefinitions[foundInput.index] = newInputDefinition;
+            }))
           }
         }
       })
     }
-  }, [dragging])
+  }, [position, props.setNodes])
 
   useEffect(() => {
     const updatedPosition = (['x1', 'x2', 'y1', 'y2'] as const).some((key) => position[key] !== props[key]);
@@ -134,7 +158,7 @@ const WireOverlay = (props: {
         coords: position.coords,
       })
     }
-  }, [props.x1, props.x2, props.y1, props.y2, position])
+  }, [props.x1, props.x2, props.y1, props.y2])
 
   return (
     <>
@@ -147,7 +171,7 @@ const WireOverlay = (props: {
           setIsInput(false);
           handleMouseDown(ev)
         }}
-        onMouseUp={handleMouseUp}
+        pointerEvents="bounding-box"
       /> */}
       <circle
         id="sink"
@@ -158,7 +182,6 @@ const WireOverlay = (props: {
           setIsInput(true);
           handleMouseDown(ev)
         }}
-        onMouseUp={handleMouseUp}
         pointerEvents="bounding-box"
       />
       <line
@@ -175,10 +198,6 @@ const WireOverlay = (props: {
 
 interface boundingBoxes {
   [indexIoKey: string]: DOMRect;
-}
-
-interface lastMovedRectMap {
-  [index: number]: DOMRect;
 }
 
 enablePatches();
@@ -261,13 +280,14 @@ export const NodeView = (props: {
                 const y1 = -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                 const y2 = -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
                 return <WireOverlay
-                  key={`${inputKey}-${outputKey}`}
+                  key={`${inputKey}`}
                   origin={nodeViewBoundingBox}
                   nodeTo={node}
                   inputKey={inputKey}
                   outputKey={outputKey}
                   boundingBoxes={boundingBoxes}
                   nodes={props.nodes}
+                  setNodes={props.setNodes}
                   x1={x1}
                   y1={y1}
                   x2={x2}

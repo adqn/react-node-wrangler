@@ -81,10 +81,18 @@ const App = () => {
       className: HtmlNode.name,
       title: "html sink",
       inputs: {
+        html: "replace with wire",
+      },
+    },
+    {
+      className: HtmlNode.name,
+      title: "html sink 2",
+      inputs: {
         html: {
           index: 4,
           attr: "sum",
         },
+
       },
     },
   ]);
