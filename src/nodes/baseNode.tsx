@@ -117,7 +117,7 @@ export const VisualNode = (props: {
           border: "1px solid black",
           borderRadius: "5px",
           background: "white",
-          zIndex: 1
+          zIndex: 0 
         }}
         onClick={() => handleClick()}
       >

@@ -14,7 +14,9 @@ const SVGCanvas = (props: {
         position: "absolute",
         top: "0px",
         left: "0px",
-      }}>
+      }}
+      pointerEvents={"none"}
+      >
       {props.children}
     </svg>
   )
@@ -41,7 +43,7 @@ const WireOverlay = (props: {
     coords: {}
   })
   const [dragging, setDragging] = useState<boolean>();
-  const [IsInput, setIsInput] = useState<boolean>();
+  const [isInput, setIsInput] = useState<boolean>();
 
   const getIndexAsJson = (indexIoKey: string) => {
     const arr = indexIoKey.split("-");
@@ -61,7 +63,7 @@ const WireOverlay = (props: {
       const xDiff = position.coords.x - ev.pageX;
       //@ts-ignore
       const yDiff = position.coords.y - ev.pageY;
-      if (IsInput) {
+      if (isInput) {
         return {
           x1: position.x1 - xDiff,
           y1: position.y1 - yDiff,
@@ -127,7 +129,7 @@ const WireOverlay = (props: {
         const currentOutput = getIndexAsJson(props.outputKey);
         const currentInput = getIndexAsJson(props.inputKey);
         if (foundInput.node !== currentInput.node) {
-          if (IsInput) {
+          if (isInput) {
             props.setNodes(
               produce((nodeDefinitions) => {
                 nodeDefinitions[currentInput.index] = produce(
@@ -136,7 +138,6 @@ const WireOverlay = (props: {
                     def.inputs[currentInput.key] = "";
                   }
                 );
-
                 nodeDefinitions[foundInput.index] = produce(
                   foundInput.node.getDefinition(),
                   (def) => {
@@ -170,6 +171,14 @@ const WireOverlay = (props: {
 
   return (
     <>
+      <line
+        x1={position.x1}
+        y1={position.y1}
+        x2={position.x2}
+        y2={position.y2}
+        stroke="green"
+        strokeWidth="3"
+      />
       {/* <circle
         id="source"
         cx={position.x1}
@@ -185,20 +194,13 @@ const WireOverlay = (props: {
         id="sink"
         cx={position.x2}
         cy={position.y2}
-        r="10"
+        r="5"
+        fill="green"
         onMouseDown={(ev: any) => {
           setIsInput(true);
           handleMouseDown(ev)
         }}
-        pointerEvents="bounding-box"
-      />
-      <line
-        x1={position.x1}
-        y1={position.y1}
-        x2={position.x2}
-        y2={position.y2}
-        stroke="green"
-        strokeWidth="3"
+        pointerEvents="painted"
       />
     </>
   )
