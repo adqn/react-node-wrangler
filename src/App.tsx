@@ -93,7 +93,6 @@ const App = () => {
           index: 4,
           attr: "sum",
         },
-
       },
     },
   ]);
@@ -112,7 +111,7 @@ const App = () => {
       // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-      <ControlOverlay nodeViewHeight={nodeViewHeight} />
+      <ControlOverlay nodes={nodeDefinitions} setNodes={setNodes} nodeViewHeight={nodeViewHeight} />
       <Resizable
         style={{
           position: "absolute",

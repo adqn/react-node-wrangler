@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
+import { setSyntheticLeadingComments } from 'typescript';
+import { BaseNode, NodeDefinition } from "../../nodes/baseNode";
+import { ConstantNode } from "../../nodes/constantNode";
 
-const AddNode = () => {
+const AddNode = ( props: {
+  nodes: NodeDefinition[],
+  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>,
+}) => {
+  const NewNode = {
+    className: ConstantNode.name,
+    title: "Untitled",
+    inputs: {
+      c: ""
+    }
+  }
+
   return (
     <div
       style={{
@@ -12,6 +26,10 @@ const AddNode = () => {
         opacity: 1,
         cursor: "pointer",
       }}
+      onClick={() => {
+        const nodes = [...props.nodes, NewNode];
+        props.setNodes(nodes)
+      }}
     >
       +
     </div>
@@ -19,6 +37,8 @@ const AddNode = () => {
 }
 
 export const ControlOverlay = (props: {
+  nodes: NodeDefinition[],
+  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>,
   nodeViewHeight: number | string
 }) => {
   const [height, setHeight] = useState<number | string>(props.nodeViewHeight);
@@ -27,7 +47,6 @@ export const ControlOverlay = (props: {
       style={{
         position: "absolute",
         bottom: 0,
-        // marginBottom: -27,
         height: 30,
         width: 70,
         background: "black",
@@ -35,7 +54,7 @@ export const ControlOverlay = (props: {
         zIndex: 1,
       }}
     >
-      <AddNode />
+      <AddNode nodes={props.nodes} setNodes={props.setNodes} />
     </div>
   )
 };
