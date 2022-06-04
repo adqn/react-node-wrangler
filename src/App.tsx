@@ -100,6 +100,7 @@ const App = () => {
   const nodes = nodeDefinitions.map(createNode);
 
   const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
+  const [nodeViewHeight, setNodeViewHeight] = useState<number>(0);
 
   return (
     <div
@@ -116,8 +117,8 @@ const App = () => {
         bottom: "5px",
       }}
       defaultSize={{
-        height: "400px",
-        width: "0"
+        height: 400,
+        width: 0
       }}
       minWidth={"100%"}
       enable={{
@@ -130,6 +131,7 @@ const App = () => {
         topRight: false,
         topLeft: false
       }}
+      onResize={(e, direction, ref, d) => {d && setNodeViewHeight(ref.clientHeight);console.log(ref.clientHeight)}}
     >
       <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
     </Resizable>

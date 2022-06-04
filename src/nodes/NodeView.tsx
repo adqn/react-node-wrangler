@@ -12,7 +12,7 @@ const SVGCanvas = (props: {
       height="100%"
       style={{
         position: "absolute",
-        top: "0px",
+        bottom: 0,
         left: "0px",
       }}
       pointerEvents={"none"}
@@ -57,7 +57,6 @@ const WireOverlay = (props: {
   }
 
   const handleMouseMove = useCallback((ev: any) => {
-    setDragging(true);
     setPosition(position => {
       //@ts-ignore
       const xDiff = position.coords.x - ev.pageX;
@@ -172,12 +171,29 @@ const WireOverlay = (props: {
   return (
     <>
       <line
+        id="visibleWire"
         x1={position.x1}
         y1={position.y1}
         x2={position.x2}
         y2={position.y2}
         stroke="green"
-        strokeWidth="3"
+        strokeWidth="2"
+      />
+      <line
+        id="wireSelection"
+        x1={position.x1}
+        y1={position.y1}
+        x2={position.x2}
+        y2={position.y2}
+        stroke="green"
+        strokeWidth="10"
+        strokeOpacity={0}
+        onMouseDown={(ev: any) => {
+          setDragging(true);
+          setIsInput(true);
+          handleMouseDown(ev)
+        }}
+        pointerEvents="painted"
       />
       {/* <circle
         id="source"
@@ -191,14 +207,23 @@ const WireOverlay = (props: {
         pointerEvents="bounding-box"
       /> */}
       <circle
+        id="visibleSink"
+        cx={position.x2}
+        cy={position.y2}
+        r="4"
+        fill={dragging ? "darkviolet" : "green"}
+      />
+      <circle
         id="sink"
         cx={position.x2}
         cy={position.y2}
-        r="5"
-        fill="green"
+        r="12"
+        opacity={0}
+        fill={dragging ? "darkviolet" : "green"}
         onMouseDown={(ev: any) => {
+          setDragging(true);
           setIsInput(true);
-          handleMouseDown(ev)
+          handleMouseDown(ev);
         }}
         pointerEvents="painted"
       />
@@ -247,7 +272,7 @@ export const NodeView = (props: {
       style={{
         // position: "absolute",
         // width: "100%",
-        height: `100%`,
+        height: "100%",
         // bottom: "0px",
         borderTop: "2px solid grey",
         background: "lightgrey",
