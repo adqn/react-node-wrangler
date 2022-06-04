@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Resizable } from 're-resizable';
+import { Resizable } from "re-resizable";
 import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
@@ -40,10 +40,12 @@ const App = () => {
       title: "Add",
       inputs: {
         a: {
+          className: "wire",
           index: 0,
           attr: "number",
         },
         b: {
+          className: "wire",
           index: 1,
           attr: "number",
         },
@@ -54,10 +56,12 @@ const App = () => {
       title: "Multiply",
       inputs: {
         x: {
+          className: "wire",
           index: 0,
           attr: "number",
         },
         y: {
+          className: "wire",
           index: 1,
           attr: "number",
         },
@@ -68,10 +72,12 @@ const App = () => {
       title: "AddNested",
       inputs: {
         a: {
+          className: "wire",
           index: 2,
           attr: "sum",
         },
         b: {
+          className: "wire",
           index: 3,
           attr: "product",
         },
@@ -89,10 +95,10 @@ const App = () => {
       title: "html sink 2",
       inputs: {
         html: {
+          className: "wire",
           index: 4,
           attr: "sum",
         },
-
       },
     },
   ]);
@@ -110,29 +116,33 @@ const App = () => {
       // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-    <Resizable
-      style={{
-        position: "absolute",
-        bottom: "5px",
-      }}
-      defaultSize={{
-        height: "400px",
-        width: "0"
-      }}
-      minWidth={"100%"}
-      enable={{
-        top: true,
-        bottom: false,
-        right: false,
-        left: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topRight: false,
-        topLeft: false
-      }}
-    >
-      <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
-    </Resizable>
+      <Resizable
+        style={{
+          position: "absolute",
+          bottom: "5px",
+        }}
+        defaultSize={{
+          height: "400px",
+          width: "0",
+        }}
+        minWidth={"100%"}
+        enable={{
+          top: true,
+          bottom: false,
+          right: false,
+          left: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topRight: false,
+          topLeft: false,
+        }}
+      >
+        <NodeView
+          nodes={nodes}
+          setNodes={setNodes}
+          setRenderIndex={setRenderIndex}
+        />
+      </Resizable>
     </div>
   );
 };

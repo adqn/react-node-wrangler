@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Draggable from "react-draggable";
 
 export interface SinkDefinition {
+  className: "wire";
   index: number;
   attr: string;
 }
@@ -18,15 +19,13 @@ export interface NodeDefinition {
 }
 
 type OutputValue = any;
-export type IO = 'input' | 'output';
+export type IO = "input" | "output";
 
 export interface NodeOutputs {
   [key: string]: OutputValue;
 }
 
-const SinkSourceIndicator = (props: {
-  isFromSink: boolean
-}) =>
+const SinkSourceIndicator = (props: { isFromSink: boolean }) => (
   <div
     style={{
       display: "inline-block",
@@ -37,9 +36,10 @@ const SinkSourceIndicator = (props: {
       marginLeft: props.isFromSink ? "-5px" : "0px",
       marginRight: props.isFromSink ? "0px" : "-7px",
       backgroundColor: "green",
-      borderRadius: "50%"
+      borderRadius: "50%",
     }}
   />
+);
 
 enablePatches();
 
@@ -52,7 +52,9 @@ export const VisualNode = (props: {
   setBoundingBox?: (index: number, io: IO, key: string, rect: DOMRect) => void;
 }) => {
   const node = props.nodes[props.index];
-  const setBoundingBox = props.setBoundingBox ? props.setBoundingBox : () => null;
+  const setBoundingBox = props.setBoundingBox
+    ? props.setBoundingBox
+    : () => null;
 
   // FIXME: In future, highlight bad type of input or missing inputs
   node.validateInputs(props.nodes);
@@ -74,38 +76,55 @@ export const VisualNode = (props: {
     }
   };
 
-  const [ioRefs, setIoRefs] = useState<{[key: string]: any}>({});
-  const getIndexIoKey = ({ index, io, key }: { index: number, io: IO, key: string }) => `${index}-${io}-${key}`;
+  const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
+  const getIndexIoKey = ({
+    index,
+    io,
+    key,
+  }: {
+    index: number;
+    io: IO;
+    key: string;
+  }) => `${index}-${io}-${key}`;
   const updates: Patch[] = [];
   const setIoRef = (index: number, io: IO, key: string, el: any) => {
-    const indexIoKey = getIndexIoKey({ index, io, key })
+    const indexIoKey = getIndexIoKey({ index, io, key });
     const oldRef = !!ioRefs[indexIoKey];
 
     if (oldRef) {
       return;
     }
 
-    const newIoRefs = produce(applyPatches(ioRefs, updates), (ioRefs) => {ioRefs[indexIoKey] = el}, (patches) => updates.push(...patches));
+    const newIoRefs = produce(
+      applyPatches(ioRefs, updates),
+      (ioRefs) => {
+        ioRefs[indexIoKey] = el;
+      },
+      (patches) => updates.push(...patches)
+    );
     setIoRefs(newIoRefs);
     setBoundingBox(props.index, io, key, el.getBoundingClientRect());
   };
 
   return (
-    <Draggable handle={`.handle`} onDrag={() => {
-      Object.keys((node.inputs)).forEach((key) => {
-        const io = "input"
-        const indexIoKey = getIndexIoKey({index: props.index, io, key});
-        const el = ioRefs[indexIoKey];
-        setBoundingBox(props.index, io, key, el.getBoundingClientRect());
-      })
-      
-      Object.keys(node.outputs(props.nodes)).forEach((key) => {
-        const io = "output"
-        const indexIoKey = getIndexIoKey({index: props.index, io, key});
-        const el = ioRefs[indexIoKey];
-        setBoundingBox(props.index, io, key, el.getBoundingClientRect());
-      });
-    }}>
+    <Draggable
+      handle={`.handle`}
+      onDrag={() => {
+        Object.keys(node.inputs).forEach((key) => {
+          const io = "input";
+          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
+          const el = ioRefs[indexIoKey];
+          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+        });
+
+        Object.keys(node.outputs(props.nodes)).forEach((key) => {
+          const io = "output";
+          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
+          const el = ioRefs[indexIoKey];
+          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+        });
+      }}
+    >
       <div
         className="VisualNode"
         style={{
@@ -117,7 +136,7 @@ export const VisualNode = (props: {
           border: "1px solid black",
           borderRadius: "5px",
           background: "white",
-          zIndex: 0 
+          zIndex: 0,
         }}
         onClick={() => handleClick()}
       >
@@ -134,25 +153,33 @@ export const VisualNode = (props: {
         </span>
         <div>
           {Object.keys(node.inputs).map((key) => {
-            const [defaultValue, isFromSink] = node.getInputValue(key, props.nodes);
+            const [defaultValue, isFromSink] = node.getInputValue(
+              key,
+              props.nodes
+            );
             return (
               <span
-                key={getIndexIoKey({index: props.index, io: "input", key})}
+                key={getIndexIoKey({ index: props.index, io: "input", key })}
                 style={{
                   display: "block",
                 }}
               >
-                <span ref={(el) => {
-                  if (!el) return;
-                  setIoRef(props.index, 'input', key, el);
-                }}><SinkSourceIndicator isFromSink={true} /></span> {key}:
+                <span
+                  ref={(el) => {
+                    if (!el) return;
+                    setIoRef(props.index, "input", key, el);
+                  }}
+                >
+                  <SinkSourceIndicator isFromSink={true} />
+                </span>{" "}
+                {key}:
                 {isFromSink ? (
                   defaultValue
                 ) : (
                   <input
                     style={{
                       width: "60%",
-                      marginLeft: "5px"
+                      marginLeft: "5px",
                     }}
                     type={"text"}
                     defaultValue={defaultValue}
@@ -169,22 +196,21 @@ export const VisualNode = (props: {
           {Object.entries(node.outputs(props.nodes)).map(([key, value]) => {
             return (
               <span
-                key={getIndexIoKey({index: props.index, io: "output", key})}
+                key={getIndexIoKey({ index: props.index, io: "output", key })}
                 style={{
                   display: "block",
                 }}
               >
                 {key}: {value}
-
                 <div
                   style={{
                     position: "absolute",
                     display: "inline-block",
-                    right: "3px"
+                    right: "3px",
                   }}
                   ref={(el) => {
                     if (!el) return;
-                    setIoRef(props.index, 'output', key, el);
+                    setIoRef(props.index, "output", key, el);
                   }}
                 >
                   <SinkSourceIndicator isFromSink={false} />
@@ -221,7 +247,7 @@ export abstract class BaseNode {
     let defaultValue = this.inputs[key];
     let isFromSink = false;
 
-    if (typeof defaultValue === "object") {
+    if (typeof defaultValue === "object" && defaultValue.className === "wire") {
       isFromSink = true;
       const node = nodes[defaultValue.index];
       defaultValue = node.getOutputValue(defaultValue.attr, nodes);
@@ -231,10 +257,12 @@ export abstract class BaseNode {
   }
 
   computedInputs(nodes: BaseNode[]) {
-    return Object.keys(this.inputs).map((key) => [key, this.getInputValue(key, nodes)[0]]).reduce((acc: NodeOutputs, [key, value]): NodeOutputs => {
-      acc[key] = value;
-      return acc;
-    }, {});
+    return Object.keys(this.inputs)
+      .map((key) => [key, this.getInputValue(key, nodes)[0]])
+      .reduce((acc: NodeOutputs, [key, value]): NodeOutputs => {
+        acc[key] = value;
+        return acc;
+      }, {});
   }
 
   getOutputValue(key: string, nodes: BaseNode[]) {
