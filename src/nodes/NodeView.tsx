@@ -130,18 +130,25 @@ const WireOverlay = (props: {
         const currentInput = getIndexAsJson(props.inputKey);
         if (foundInput.node !== currentInput.node) {
           if (isInput) {
-            props.setNodes(produce((nodeDefinitions) => {
-              const oldInputDefinition = currentInput.node.getDefinition();
-              oldInputDefinition.inputs[currentInput.key] = '';
-              nodeDefinitions[currentInput.index] = oldInputDefinition;
-
-              const newInputDefinition = foundInput.node.getDefinition();
-              newInputDefinition.inputs[foundInput.key] = {
-                index: currentOutput.index,
-                attr: currentOutput.key,
-              };
-              nodeDefinitions[foundInput.index] = newInputDefinition;
-            }))
+            props.setNodes(
+              produce((nodeDefinitions) => {
+                nodeDefinitions[currentInput.index] = produce(
+                  currentInput.node.getDefinition(),
+                  (def) => {
+                    def.inputs[currentInput.key] = "";
+                  }
+                );
+                nodeDefinitions[foundInput.index] = produce(
+                  foundInput.node.getDefinition(),
+                  (def) => {
+                    def.inputs[foundInput.key] = {
+                      index: currentOutput.index,
+                      attr: currentOutput.key,
+                    };
+                  }
+                );
+              })
+            );
           }
         }
       })
