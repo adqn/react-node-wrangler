@@ -24,7 +24,6 @@ const SVGCanvas = (props: { children: any }) => {
 
 const WireOverlay = (props: {
   origin: any;
-  nodeTo: BaseNode;
   inputKey: string;
   outputKey: string;
   boundingBoxes: boundingBoxes;
@@ -224,6 +223,197 @@ const WireOverlay = (props: {
   );
 };
 
+const InputOverlay = (props: {
+  origin: any;
+  inputKey: string;
+  boundingBoxes: boundingBoxes;
+  nodes: BaseNode[];
+  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  x1: number;
+  y1: number;
+}) => {
+  const [position, setPosition] = useState({
+    x1: props.x1,
+    y1: props.y1,
+    x2: props.x1,
+    y2: props.y1,
+    coords: {},
+  });
+  const [dragging, setDragging] = useState<boolean>();
+  const [isOutput, setIsOutput] = useState<boolean>();
+
+  const getIndexAsJson = (indexIoKey: string) => {
+    const arr = indexIoKey.split("-");
+    const index = parseInt(arr[0]);
+    return {
+      index,
+      node: props.nodes[index],
+      io: arr[1],
+      key: arr[2],
+    };
+  };
+
+  const handleMouseMove = useCallback(
+    (ev: any) => {
+      setDragging(true);
+      setPosition((position) => {
+        //@ts-ignore
+        const xDiff = position.coords.x - ev.pageX;
+        //@ts-ignore
+        const yDiff = position.coords.y - ev.pageY;
+        if (isOutput) {
+          return {
+            x1: position.x1 - xDiff,
+            y1: position.y1 - yDiff,
+            x2: props.x1,
+            y2: props.y1,
+            coords: {
+              x: ev.pageX,
+              y: ev.pageY,
+            },
+          };
+        } else {
+          return {
+            x1: props.x1,
+            y1: props.y1,
+            x2: position.x2 - xDiff,
+            y2: position.y2 - yDiff,
+            coords: {
+              x: ev.pageX,
+              y: ev.pageY,
+            },
+          };
+        }
+      });
+    },
+    [props.x1, props.y1]
+  );
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setIsOutput(false);
+    document.removeEventListener("mousemove", handleMouseMove);
+    setPosition({
+      x1: props.x1,
+      y1: props.y1,
+      x2: props.x1,
+      y2: props.y1,
+      coords: position.coords,
+    });
+  };
+
+  const handleMouseDown = (ev: any) => {
+    const pageX = ev.pageX;
+    const pageY = ev.pageY;
+    setPosition((position) =>
+      Object.assign({}, position, {
+        coords: {
+          x: pageX,
+          y: pageY,
+        },
+      })
+    );
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp, { once: true });
+  };
+
+  useEffect(() => {
+    if (dragging) {
+      Object.entries(props.boundingBoxes)
+        .filter(([key, value]) => {
+          const xRange = [
+            props.boundingBoxes[key].x - 10,
+            props.boundingBoxes[key].x + 10,
+          ];
+          const yRange = [
+            -props.origin.y + props.boundingBoxes[key].y - 10,
+            -props.origin.y + props.boundingBoxes[key].y + 10,
+          ];
+          return (
+            position.y2 >= yRange[0] &&
+            position.y2 <= yRange[1] &&
+            position.x2 >= xRange[0] &&
+            position.x2 <= xRange[1]
+          );
+        })
+        .forEach((boundingBox) => {
+          const foundOutput = getIndexAsJson(boundingBox[0]);
+          const currentInput = getIndexAsJson(props.inputKey);
+          if (foundOutput.node !== currentInput.node) {
+            if (isOutput) {
+              props.setNodes(
+                produce((nodeDefinitions) => {
+                  nodeDefinitions[currentInput.index] = produce(
+                    currentInput.node.getDefinition(),
+                    (def) => {
+                      def.inputs[currentInput.key] = {
+                        className: "wire",
+                        index: foundOutput.index,
+                        attr: foundOutput.key,
+                      };
+                    }
+                  );
+                })
+              );
+            }
+          }
+        });
+    }
+  }, [position, props.setNodes]);
+
+  useEffect(() => {
+    const updatedPosition = (["x1", "y1"] as const).some(
+      (key) => position[key] !== props[key]
+    );
+
+    if (updatedPosition) {
+      setPosition({
+        x1: props.x1,
+        y1: props.y1,
+        x2: props.x1,
+        y2: props.y1,
+        coords: position.coords,
+      });
+    }
+  }, [props.x1, props.y1]);
+
+  return (
+    <>
+      <line
+        x1={position.x1}
+        y1={position.y1}
+        x2={position.x2}
+        y2={position.y2}
+        stroke="green"
+        strokeWidth="3"
+      />
+      {/* <circle
+        id="source"
+        cx={position.x1}
+        cy={position.y1}
+        r="10"
+        onMouseDown={(ev: any) => {
+          setIsOutput(false);
+          handleMouseDown(ev)
+        }}
+        pointerEvents="bounding-box"
+      /> */}
+      <circle
+        id="sink"
+        cx={position.x2}
+        cy={position.y2}
+        r="5"
+        fill="green"
+        onMouseDown={(ev: any) => {
+          setIsOutput(true);
+          handleMouseDown(ev);
+        }}
+        pointerEvents="painted"
+      />
+    </>
+  );
+};
+
 interface boundingBoxes {
   [indexIoKey: string]: DOMRect;
 }
@@ -315,30 +505,34 @@ export const NodeView = (props: {
         {props.nodes
           .map((node, index) => {
             return Object.entries(node.inputs).map(([key, value]) => {
-              if (typeof value === "object" && value.className === "wire") {
+              const inputKey = getIndexIoKey({ index, io: "input", key });
+              const inRect = boundingBoxes[inputKey];
+
+              if (!nodeViewBoundingBox || !inRect) {
+                return null;
+              }
+              const x2 =
+                -nodeViewBoundingBox.x + inRect.x - 3 + inRect.width / 2;
+              const y2 =
+                -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
+
+              if (node.isWire(value)) {
                 const outputKey = getIndexIoKey({
                   index: value.index,
                   io: "output",
                   key: value.attr,
                 });
                 const outRect = boundingBoxes[outputKey];
-                const inputKey = getIndexIoKey({ index, io: "input", key });
-                const inRect = boundingBoxes[inputKey];
 
-                if (outRect && inRect && nodeViewBoundingBox) {
+                if (outRect && inRect) {
                   const x1 =
                     -nodeViewBoundingBox.x + outRect.x + 3 + outRect.width / 2;
-                  const x2 =
-                    -nodeViewBoundingBox.x + inRect.x - 3 + inRect.width / 2;
                   const y1 =
                     -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
-                  const y2 =
-                    -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
                   return (
                     <WireOverlay
                       key={`${inputKey}`}
                       origin={nodeViewBoundingBox}
-                      nodeTo={node}
                       inputKey={inputKey}
                       outputKey={outputKey}
                       boundingBoxes={boundingBoxes}
@@ -351,8 +545,20 @@ export const NodeView = (props: {
                     />
                   );
                 }
+              } else {
+                return (
+                  <InputOverlay
+                    key={`${inputKey}`}
+                    origin={nodeViewBoundingBox}
+                    inputKey={inputKey}
+                    boundingBoxes={boundingBoxes}
+                    nodes={props.nodes}
+                    setNodes={props.setNodes}
+                    x1={x2}
+                    y1={y2}
+                  />
+                );
               }
-              return null;
             });
           })
           .reduce((acc, curr) => {

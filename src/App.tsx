@@ -6,6 +6,8 @@ import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
 import { NodeView } from "./nodes/NodeView";
+import { ObjectNode } from "./nodes/constantNode/objectNode";
+import { SpreadNode } from "./nodes/constantNode/spreadNode";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -13,6 +15,8 @@ const createNode = ({ className, ...definition }: NodeDefinition) => {
     [AddNode.name]: AddNode,
     [MultiplyNode.name]: MultiplyNode,
     [HtmlNode.name]: HtmlNode,
+    [ObjectNode.name]: ObjectNode,
+    [SpreadNode.name]: SpreadNode,
   };
 
   const NodeClass = nodeNameMap[className];
@@ -29,78 +33,90 @@ const App = () => {
       },
     },
     {
-      className: ConstantNode.name,
-      title: "four",
-      inputs: {
-        c: 4,
-      },
+      className: ObjectNode.name,
+      title: "Object",
+      inputs: {},
     },
     {
-      className: AddNode.name,
-      title: "Add",
+      className: SpreadNode.name,
+      title: "Spread",
       inputs: {
-        a: {
-          className: "wire",
-          index: 0,
-          attr: "number",
-        },
-        b: {
-          className: "wire",
-          index: 1,
-          attr: "number",
-        },
+        obj: {},
       },
     },
-    {
-      className: MultiplyNode.name,
-      title: "Multiply",
-      inputs: {
-        x: {
-          className: "wire",
-          index: 0,
-          attr: "number",
-        },
-        y: {
-          className: "wire",
-          index: 1,
-          attr: "number",
-        },
-      },
-    },
-    {
-      className: AddNode.name,
-      title: "AddNested",
-      inputs: {
-        a: {
-          className: "wire",
-          index: 2,
-          attr: "sum",
-        },
-        b: {
-          className: "wire",
-          index: 3,
-          attr: "product",
-        },
-      },
-    },
-    {
-      className: HtmlNode.name,
-      title: "html sink",
-      inputs: {
-        html: "replace with wire",
-      },
-    },
-    {
-      className: HtmlNode.name,
-      title: "html sink 2",
-      inputs: {
-        html: {
-          className: "wire",
-          index: 4,
-          attr: "sum",
-        },
-      },
-    },
+    // {
+    //   className: ConstantNode.name,
+    //   title: "four",
+    //   inputs: {
+    //     c: 4,
+    //   },
+    // },
+    // {
+    //   className: AddNode.name,
+    //   title: "Add",
+    //   inputs: {
+    //     a: {
+    //       className: "wire",
+    //       index: 0,
+    //       attr: "number",
+    //     },
+    //     b: {
+    //       className: "wire",
+    //       index: 1,
+    //       attr: "number",
+    //     },
+    //   },
+    // },
+    // {
+    //   className: MultiplyNode.name,
+    //   title: "Multiply",
+    //   inputs: {
+    //     x: {
+    //       className: "wire",
+    //       index: 0,
+    //       attr: "number",
+    //     },
+    //     y: {
+    //       className: "wire",
+    //       index: 1,
+    //       attr: "number",
+    //     },
+    //   },
+    // },
+    // {
+    //   className: AddNode.name,
+    //   title: "AddNested",
+    //   inputs: {
+    //     a: {
+    //       className: "wire",
+    //       index: 2,
+    //       attr: "sum",
+    //     },
+    //     b: {
+    //       className: "wire",
+    //       index: 3,
+    //       attr: "product",
+    //     },
+    //   },
+    // },
+    // {
+    //   className: HtmlNode.name,
+    //   title: "html sink",
+    //   inputs: {
+    //     html: "replace with wire",
+    //   },
+    // },
+    // {
+    //   className: HtmlNode.name,
+    //   title: "html sink 2",
+    //   inputs: {
+    //     html: {
+    //       className: "wire",
+    //       index: 4,
+    //       attr: "sum",
+    //     },
+    //   },
+    // },
   ]);
 
   const nodes = nodeDefinitions.map(createNode);

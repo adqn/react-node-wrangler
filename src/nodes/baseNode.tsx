@@ -8,8 +8,23 @@ export interface SinkDefinition {
   attr: string;
 }
 
+type NonNestedJson =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: string | number | boolean | null };
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | NonNestedJson[]
+  | { [key: string]: NonNestedJson };
+
 export interface NodeInputs {
-  [key: string]: undefined | number | string | SinkDefinition;
+  [key: string]: Json | SinkDefinition;
 }
 
 export interface NodeDefinition {
@@ -58,16 +73,12 @@ export const VisualNode = (props: {
 
   // FIXME: In future, highlight bad type of input or missing inputs
   node.validateInputs(props.nodes);
-  const getNodes = () => {
-    const newNodes = [...props.nodes.map((node) => node.getDefinition())];
-    return newNodes;
-  };
-
   const handleChange = (key: string, value: string) => {
-    const newNodes = getNodes();
-    const node = newNodes[props.index];
-    node.inputs[key] = value;
-    props.setNodes(newNodes);
+    props.setNodes(
+      produce((nodeDefinitions) => {
+        nodeDefinitions[props.index].inputs[key] = value;
+      })
+    );
   };
 
   const handleClick = () => {
@@ -173,8 +184,8 @@ export const VisualNode = (props: {
                   <SinkSourceIndicator isFromSink={true} />
                 </span>{" "}
                 {key}:
-                {isFromSink ? (
-                  defaultValue
+                {isFromSink || typeof defaultValue === "object" ? (
+                  JSON.stringify(defaultValue)
                 ) : (
                   <input
                     style={{
@@ -201,7 +212,7 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                {key}: {value}
+                {key}: {JSON.stringify(value)}
                 <div
                   style={{
                     position: "absolute",
@@ -243,11 +254,18 @@ export abstract class BaseNode {
     };
   }
 
+  isWire(value: Json | SinkDefinition): value is SinkDefinition {
+    return (
+      typeof value === "object" &&
+      (value as SinkDefinition).className === "wire"
+    );
+  }
+
   getInputValue(key: string, nodes: BaseNode[]): [OutputValue, boolean] {
     let defaultValue = this.inputs[key];
     let isFromSink = false;
 
-    if (typeof defaultValue === "object" && defaultValue.className === "wire") {
+    if (this.isWire(defaultValue)) {
       isFromSink = true;
       const node = nodes[defaultValue.index];
       defaultValue = node.getOutputValue(defaultValue.attr, nodes);
@@ -275,7 +293,7 @@ export abstract class BaseNode {
     index: number,
     nodes: BaseNode[],
     setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>
-  ) {
+  ): JSX.Element {
     return (
       <VisualNode
         index={index}
