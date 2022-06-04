@@ -274,6 +274,7 @@ export const NodeView = (props: {
         // width: "100%",
         height: "100%",
         // bottom: "0px",
+        paddingTop: 30,
         borderTop: "2px solid grey",
         background: "lightgrey",
         overflow: "scroll",

@@ -6,6 +6,7 @@ import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
 import { NodeView } from "./nodes/NodeView";
+import { ControlOverlay  } from "./Components/ControlOverlay";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -100,7 +101,7 @@ const App = () => {
   const nodes = nodeDefinitions.map(createNode);
 
   const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
-  const [nodeViewHeight, setNodeViewHeight] = useState<number>(0);
+  const [nodeViewHeight, setNodeViewHeight] = useState<number>(400);
 
   return (
     <div
@@ -111,30 +112,31 @@ const App = () => {
       // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-    <Resizable
-      style={{
-        position: "absolute",
-        bottom: "5px",
-      }}
-      defaultSize={{
-        height: 400,
-        width: 0
-      }}
-      minWidth={"100%"}
-      enable={{
-        top: true,
-        bottom: false,
-        right: false,
-        left: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topRight: false,
-        topLeft: false
-      }}
-      onResize={(e, direction, ref, d) => {d && setNodeViewHeight(ref.clientHeight);console.log(ref.clientHeight)}}
-    >
-      <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
-    </Resizable>
+      <ControlOverlay nodeViewHeight={nodeViewHeight} />
+      <Resizable
+        style={{
+          position: "absolute",
+          bottom: "5px",
+        }}
+        defaultSize={{
+          height: 400,
+          width: 0
+        }}
+        minWidth={"100%"}
+        enable={{
+          top: true,
+          bottom: false,
+          right: false,
+          left: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topRight: false,
+          topLeft: false
+        }}
+        onResize={(e, direction, ref, d) => {setNodeViewHeight(ref.clientHeight);console.log(ref.clientHeight)}}
+      >
+        <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
+      </Resizable>
     </div>
   );
 };
