@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
-import Draggable, { DraggableCore } from "react-draggable";
+import produce, { applyPatches, enablePatches, Patch } from "immer";
+import React, { useState } from "react";
+import Draggable from "react-draggable";
 
 export interface SinkDefinition {
   index: number;
@@ -40,6 +41,8 @@ const SinkSourceIndicator = (props: {
     }}
   />
 
+enablePatches();
+
 export const VisualNode = (props: {
   index: number;
   title: string;
@@ -71,8 +74,38 @@ export const VisualNode = (props: {
     }
   };
 
+  const [ioRefs, setIoRefs] = useState<{[key: string]: any}>({});
+  const getIndexIoKey = ({ index, io, key }: { index: number, io: IO, key: string }) => `${index}-${io}-${key}`;
+  const updates: Patch[] = [];
+  const setIoRef = (index: number, io: IO, key: string, el: any) => {
+    const indexIoKey = getIndexIoKey({ index, io, key })
+    const oldRef = !!ioRefs[indexIoKey];
+
+    if (oldRef) {
+      return;
+    }
+
+    const newIoRefs = produce(applyPatches(ioRefs, updates), (ioRefs) => {ioRefs[indexIoKey] = el}, (patches) => updates.push(...patches));
+    setIoRefs(newIoRefs);
+    setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+  };
+
   return (
-    <Draggable handle={`.handle`}>
+    <Draggable handle={`.handle`} onDrag={() => {
+      Object.keys((node.inputs)).forEach((key) => {
+        const io = "input"
+        const indexIoKey = getIndexIoKey({index: props.index, io, key});
+        const el = ioRefs[indexIoKey];
+        setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+      })
+      
+      Object.keys(node.outputs(props.nodes)).forEach((key) => {
+        const io = "output"
+        const indexIoKey = getIndexIoKey({index: props.index, io, key});
+        const el = ioRefs[indexIoKey];
+        setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+      });
+    }}>
       <div
         className="VisualNode"
         style={{
@@ -104,13 +137,14 @@ export const VisualNode = (props: {
             const [defaultValue, isFromSink] = node.getInputValue(key, props.nodes);
             return (
               <span
+                key={getIndexIoKey({index: props.index, io: "input", key})}
                 style={{
                   display: "block",
                 }}
               >
                 <span ref={(el) => {
                   if (!el) return;
-                  setBoundingBox(props.index, 'input', key, el.getBoundingClientRect());
+                  setIoRef(props.index, 'input', key, el);
                 }}><SinkSourceIndicator isFromSink={true} /></span> {key}:
                 {isFromSink ? (
                   defaultValue
@@ -135,11 +169,13 @@ export const VisualNode = (props: {
           {Object.entries(node.outputs(props.nodes)).map(([key, value]) => {
             return (
               <span
+                key={getIndexIoKey({index: props.index, io: "output", key})}
                 style={{
                   display: "block",
                 }}
               >
                 {key}: {value}
+
                 <div
                   style={{
                     position: "absolute",
@@ -148,7 +184,7 @@ export const VisualNode = (props: {
                   }}
                   ref={(el) => {
                     if (!el) return;
-                    setBoundingBox(props.index, 'output', key, el.getBoundingClientRect());
+                    setIoRef(props.index, 'output', key, el);
                   }}
                 >
                   <SinkSourceIndicator isFromSink={false} />

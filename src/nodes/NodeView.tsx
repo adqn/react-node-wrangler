@@ -1,3 +1,4 @@
+import produce, { enablePatches, applyPatches, Patch } from "immer";
 import React, { useEffect, useState } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 
@@ -119,7 +120,21 @@ const WireOverlay = (props: {
         }
       })
     }
-  }, [position])
+  }, [dragging])
+
+  useEffect(() => {
+    const updatedPosition = (['x1', 'x2', 'y1', 'y2'] as const).some((key) => position[key] !== props[key]);
+
+    if (updatedPosition) {
+      setPosition({
+        x1: props.x1,
+        y1: props.y1,
+        x2: props.x2,
+        y2: props.y2,
+        coords: position.coords,
+      })
+    }
+  }, [props.x1, props.x2, props.y1, props.y2, position])
 
   return (
     <>
@@ -144,6 +159,7 @@ const WireOverlay = (props: {
           handleMouseDown(ev)
         }}
         onMouseUp={handleMouseUp}
+        pointerEvents="bounding-box"
       />
       <line
         x1={position.x1}
@@ -165,6 +181,8 @@ interface lastMovedRectMap {
   [index: number]: DOMRect;
 }
 
+enablePatches();
+
 export const NodeView = (props: {
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
@@ -174,6 +192,7 @@ export const NodeView = (props: {
   const [nodeViewBoundingBox, setNodeViewBoundingBox] = useState<DOMRect | null>(null);
   const getIndexIoKey = ({ index, io, key }: { index: number, io: IO, key: string }) => `${index}-${io}-${key}`;
 
+  const updates: Patch[] = [];
   const setBoundingBox = (index: number, io: IO, key: string, rect: DOMRect) => {
     const indexIoKey = getIndexIoKey({ index, io, key })
     const oldRect = boundingBoxes[indexIoKey];
@@ -182,13 +201,16 @@ export const NodeView = (props: {
       return;
     }
 
-    const newBoundingBoxes = { ...boundingBoxes };
-    newBoundingBoxes[indexIoKey] = rect;
+    const newBoundingBoxes = produce(
+      applyPatches(boundingBoxes, updates),
+      (boundingBoxes) => {
+        boundingBoxes[indexIoKey] = rect;
+      },
+      (patches) => updates.push(...patches)
+    )
+
     setBoundingBoxes(newBoundingBoxes);
   };
-
-  console.log(boundingBoxes);
-  console.log(nodeViewBoundingBox);
 
   return (
     <div
@@ -214,6 +236,7 @@ export const NodeView = (props: {
       {props.nodes.map((node, index) => {
         return (
           <VisualNode
+            key={`${index}`}
             index={index}
             title={node.title}
             nodes={props.nodes}
@@ -238,7 +261,7 @@ export const NodeView = (props: {
                 const y1 = -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                 const y2 = -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
                 return <WireOverlay
-                  key={inputKey}
+                  key={`${inputKey}-${outputKey}`}
                   origin={nodeViewBoundingBox}
                   nodeTo={node}
                   inputKey={inputKey}
