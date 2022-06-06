@@ -31,6 +31,7 @@ export interface NodeDefinition {
   className: string;
   title: string;
   inputs: NodeInputs;
+  attrs?: any;
 }
 
 type OutputValue = any;
@@ -238,19 +239,34 @@ export const VisualNode = (props: {
 export abstract class BaseNode {
   title: string;
   inputs: NodeInputs;
+  attrs?: any;
   abstract validateInputs(nodes: BaseNode[]): void;
   abstract outputs(nodes: BaseNode[]): NodeOutputs;
 
-  constructor({ title, inputs }: { title: string; inputs: NodeInputs }) {
+  constructor({
+    title,
+    inputs,
+    attrs,
+  }: {
+    title: string;
+    inputs: NodeInputs;
+    attrs?: any;
+  }) {
     this.title = title;
     this.inputs = inputs;
+    this.attrs = attrs;
   }
 
   getDefinition(): NodeDefinition {
+    const attrs: { attrs?: any } = {};
+    if (this.attrs) {
+      attrs.attrs = this.attrs;
+    }
     return {
       className: this.constructor.name,
       title: this.title,
       inputs: this.inputs,
+      ...attrs,
     };
   }
 

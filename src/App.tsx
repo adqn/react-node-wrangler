@@ -8,6 +8,8 @@ import { HtmlNode } from "./nodes/htmlNode";
 import { NodeView } from "./nodes/NodeView";
 import { ObjectNode } from "./nodes/constantNode/objectNode";
 import { SpreadNode } from "./nodes/constantNode/spreadNode";
+import { NestedNode } from "./nodes/constantNode/nestedNode";
+import { PassThruNode } from "./nodes/constantNode/passThruNode";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -17,6 +19,8 @@ const createNode = ({ className, ...definition }: NodeDefinition) => {
     [HtmlNode.name]: HtmlNode,
     [ObjectNode.name]: ObjectNode,
     [SpreadNode.name]: SpreadNode,
+    [NestedNode.name]: NestedNode,
+    [PassThruNode.name]: PassThruNode,
   };
 
   const NodeClass = nodeNameMap[className];
@@ -33,17 +37,17 @@ const App = () => {
       },
     },
     {
-      className: ObjectNode.name,
-      title: "Object",
+      className: NestedNode.name,
+      title: "Nested POC",
       inputs: {},
     },
-    {
-      className: SpreadNode.name,
-      title: "Spread",
-      inputs: {
-        obj: {},
-      },
-    },
+    // {
+    //   className: SpreadNode.name,
+    //   title: "Spread",
+    //   inputs: {
+    //     obj: {},
+    //   },
+    // },
     // {
     //   className: ConstantNode.name,
     //   title: "four",
