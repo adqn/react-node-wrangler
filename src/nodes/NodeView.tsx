@@ -24,6 +24,7 @@ const SVGCanvas = (props: { children: any }) => {
 
 const WireOverlay = (props: {
   origin: any;
+  nodeTo: BaseNode;
   inputKey: string;
   outputKey: string;
   boundingBoxes: boundingBoxes;
@@ -560,6 +561,7 @@ export const NodeView = (props: {
                     <WireOverlay
                       key={`${inputKey}`}
                       origin={nodeViewBoundingBox}
+                      nodeTo={node}
                       inputKey={inputKey}
                       outputKey={outputKey}
                       boundingBoxes={boundingBoxes}
