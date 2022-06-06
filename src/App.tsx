@@ -42,13 +42,20 @@ const App = () => {
       title: "Nested POC",
       inputs: {},
     },
-    // {
-    //   className: SpreadNode.name,
-    //   title: "Spread",
-    //   inputs: {
-    //     obj: {},
-    //   },
-    // },
+    {
+      className: ObjectNode.name,
+      title: "Object",
+      inputs: {
+        obj: {},
+      },
+    },
+    {
+      className: SpreadNode.name,
+      title: "Spread",
+      inputs: {
+        obj: {},
+      },
+    },
     // {
     //   className: ConstantNode.name,
     //   title: "four",
