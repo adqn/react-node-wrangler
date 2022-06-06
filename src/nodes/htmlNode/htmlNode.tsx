@@ -7,17 +7,17 @@ import {
 
 export class HtmlNode extends BaseNode {
   validateInputs(): void {
-    if (typeof this.inputs.html === 'undefined') {
-        throw Error("html must be a defined input")
+    if (typeof this.inputs.html === "undefined") {
+      throw Error("html must be a defined input");
     }
-}
+  }
 
   outputs() {
     return {};
   }
 
   render(_: number, nodes: BaseNode[]) {
-    const {html} = this.computedInputs(nodes);
+    const { html } = this.computedInputs(nodes);
     return (
       <span
         style={{

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Resizable } from 're-resizable';
+import { Resizable } from "re-resizable";
 import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
 // import './App.css';
 import { NodeView } from "./nodes/NodeView";
-import { ControlOverlay  } from "./Components/ControlOverlay";
+import { ControlOverlay } from "./Components/ControlOverlay";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -111,7 +111,11 @@ const App = () => {
       // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-      <ControlOverlay nodes={nodeDefinitions} setNodes={setNodes} nodeViewHeight={nodeViewHeight} />
+      <ControlOverlay
+        nodes={nodeDefinitions}
+        setNodes={setNodes}
+        nodeViewHeight={nodeViewHeight}
+      />
       <Resizable
         style={{
           position: "absolute",
@@ -119,7 +123,7 @@ const App = () => {
         }}
         defaultSize={{
           height: 400,
-          width: 0
+          width: 0,
         }}
         minWidth={"100%"}
         enable={{
@@ -130,11 +134,18 @@ const App = () => {
           bottomRight: false,
           bottomLeft: false,
           topRight: false,
-          topLeft: false
+          topLeft: false,
         }}
-        onResize={(e, direction, ref, d) => {setNodeViewHeight(ref.clientHeight);console.log(ref.clientHeight)}}
+        onResize={(e, direction, ref, d) => {
+          setNodeViewHeight(ref.clientHeight);
+          console.log(ref.clientHeight);
+        }}
       >
-        <NodeView nodes={nodes} setNodes={setNodes} setRenderIndex={setRenderIndex} />
+        <NodeView
+          nodes={nodes}
+          setNodes={setNodes}
+          setRenderIndex={setRenderIndex}
+        />
       </Resizable>
     </div>
   );
