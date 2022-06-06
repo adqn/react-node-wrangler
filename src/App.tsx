@@ -10,6 +10,7 @@ import { ObjectNode } from "./nodes/constantNode/objectNode";
 import { SpreadNode } from "./nodes/constantNode/spreadNode";
 import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
+import { ControlOverlay } from "./Components/ControlOverlay";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -126,6 +127,7 @@ const App = () => {
   const nodes = nodeDefinitions.map(createNode);
 
   const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
+  const [nodeViewHeight, setNodeViewHeight] = useState<number>(400);
 
   return (
     <div
@@ -136,14 +138,19 @@ const App = () => {
       // }}
     >
       {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+      <ControlOverlay
+        nodes={nodeDefinitions}
+        setNodes={setNodes}
+        nodeViewHeight={nodeViewHeight}
+      />
       <Resizable
         style={{
           position: "absolute",
           bottom: "5px",
         }}
         defaultSize={{
-          height: "400px",
-          width: "0",
+          height: 400,
+          width: 0,
         }}
         minWidth={"100%"}
         enable={{
@@ -155,6 +162,10 @@ const App = () => {
           bottomLeft: false,
           topRight: false,
           topLeft: false,
+        }}
+        onResize={(e, direction, ref, d) => {
+          setNodeViewHeight(ref.clientHeight);
+          console.log(ref.clientHeight);
         }}
       >
         <NodeView
