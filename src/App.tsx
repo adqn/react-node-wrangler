@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import { Resizable } from "re-resizable";
 import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
@@ -11,6 +11,7 @@ import { SpreadNode } from "./nodes/constantNode/spreadNode";
 import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
 import { ControlOverlay } from "./Components/ControlOverlay";
+import { NodeViewContext } from "./nodes/nodeView-context";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -139,48 +140,51 @@ const App = () => {
   return (
     <div
       className="App"
-      // style={{
-      //   height: "100%",
-      //   overflow: "scroll"
-      // }}
+      style={
+        {
+          // display: "block",
+        }
+      }
     >
-      {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-      <ControlOverlay
-        nodes={nodeDefinitions}
-        setNodes={setNodes}
-        nodeViewHeight={nodeViewHeight}
-      />
-      <Resizable
-        style={{
-          position: "absolute",
-          bottom: "5px",
-        }}
-        defaultSize={{
-          height: 400,
-          width: 0,
-        }}
-        minWidth={"100%"}
-        enable={{
-          top: true,
-          bottom: false,
-          right: false,
-          left: false,
-          bottomRight: false,
-          bottomLeft: false,
-          topRight: false,
-          topLeft: false,
-        }}
-        onResize={(e, direction, ref, d) => {
-          setNodeViewHeight(ref.clientHeight);
-          console.log(ref.clientHeight);
-        }}
-      >
-        <NodeView
-          nodes={nodes}
+      <NodeViewContext.Provider value={nodeViewHeight}>
+        {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+        <ControlOverlay
+          nodes={nodeDefinitions}
           setNodes={setNodes}
-          setRenderIndex={setRenderIndex}
+          nodeViewHeight={nodeViewHeight}
         />
-      </Resizable>
+        <Resizable
+          style={{
+            position: "absolute",
+            bottom: "5px",
+          }}
+          defaultSize={{
+            height: 400,
+            width: 0,
+          }}
+          minWidth={"100%"}
+          enable={{
+            top: true,
+            bottom: false,
+            right: false,
+            left: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topRight: false,
+            topLeft: false,
+          }}
+          onResize={(e, direction, ref, d) => {
+            setNodeViewHeight(ref.clientHeight);
+            console.log(ref.clientHeight);
+          }}
+        >
+          <NodeView
+            nodes={nodes}
+            setNodes={setNodes}
+            setRenderIndex={setRenderIndex}
+          />
+        </Resizable>
+      </NodeViewContext.Provider>
     </div>
   );
 };

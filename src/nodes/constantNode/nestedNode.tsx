@@ -1,6 +1,6 @@
 import produce from "immer";
 import { Resizable } from "re-resizable";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { BaseNode, Json, NodeDefinition, NodeInputs } from "../baseNode";
 import { AddNode, MultiplyNode } from "../calculationNode";
 import { HtmlNode } from "../htmlNode";
@@ -9,6 +9,7 @@ import { ConstantNode } from "./constantNode";
 import { ObjectNode } from "./objectNode";
 import { PassThruNode } from "./passThruNode";
 import { SpreadNode } from "./spreadNode";
+import { NodeViewContext } from "../nodeView-context";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -32,13 +33,13 @@ const NestedNodeRender = (props: {
   const [renderIndex, setRenderIndex] = useState<number>(
     props.nodes.length - 1
   );
+  const nodeViewHeight = useContext(NodeViewContext);
 
   return (
     <div
       className="NestedNode"
       // style={{
-      //   height: "100%",
-      //   overflow: "scroll"
+      //   display: "block",
       // }}
     >
       {props.nodes[renderIndex].render(
@@ -49,10 +50,10 @@ const NestedNodeRender = (props: {
       <Resizable
         style={{
           position: "absolute",
-          bottom: "5px",
+          bottom: nodeViewHeight,
         }}
         defaultSize={{
-          height: "400px",
+          height: "200px",
           width: "0",
         }}
         minWidth={"100%"}
