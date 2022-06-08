@@ -53,7 +53,7 @@ const NestedNodeRender = (props: {
           bottom: nodeViewHeight,
         }}
         defaultSize={{
-          height: "200px",
+          height: "250px",
           width: "0",
         }}
         minWidth={"100%"}
