@@ -136,6 +136,7 @@ const App = () => {
 
   const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
   const [nodeViewHeight, setNodeViewHeight] = useState<number>(400);
+  const [nodeViewHeightDelta, setNodeViewHeightDelta] = useState<number>(0);
 
   return (
     <div
@@ -146,7 +147,12 @@ const App = () => {
         }
       }
     >
-      <NodeViewContext.Provider value={nodeViewHeight}>
+      <NodeViewContext.Provider
+        value={{
+          height: nodeViewHeight,
+          heightDelta: nodeViewHeightDelta,
+        }}
+      >
         {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
         <ControlOverlay
           nodes={nodeDefinitions}
@@ -175,7 +181,7 @@ const App = () => {
           }}
           onResize={(e, direction, ref, d) => {
             setNodeViewHeight(ref.clientHeight);
-            console.log(ref.clientHeight);
+            setNodeViewHeightDelta(d.height);
           }}
         >
           <NodeView

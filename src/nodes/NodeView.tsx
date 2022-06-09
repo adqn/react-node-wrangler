@@ -1,24 +1,36 @@
 import produce, { enablePatches, applyPatches, Patch } from "immer";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
+import { NodeViewContext } from "./nodeView-context";
 
 const SVGCanvas = (props: { children: any }) => {
+  const nodeViewHeight = useContext(NodeViewContext);
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      version="2"
-      className="WireOverlay"
-      width="100%"
-      height="100%"
+    <div
       style={{
         position: "absolute",
-        bottom: 0,
-        left: "0px",
+        bottom: nodeViewHeight.heightDelta,
+        height: "100%",
+        width: "100%",
+        pointerEvents: "none",
       }}
-      pointerEvents={"none"}
     >
-      {props.children}
-    </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        version="2"
+        className="WireOverlay"
+        width="100%"
+        height="100%"
+        style={{
+          // position: "absolute",
+          // bottom: 0,
+          left: "0px",
+        }}
+        pointerEvents={"none"}
+      >
+        {props.children}
+      </svg>
+    </div>
   );
 };
 
@@ -490,6 +502,8 @@ export const NodeView = (props: {
     setBoundingBoxes(newBoundingBoxes);
   };
 
+  const nodeViewHeight = useContext(NodeViewContext);
+
   return (
     <div
       className="NodeView"
@@ -514,6 +528,7 @@ export const NodeView = (props: {
           return;
         }
         setNodeViewBoundingBox(rect);
+        console.log(nodeViewBoundingBox, nodeViewHeight);
       }}
     >
       {props.nodes.map((node, index) => {
@@ -556,11 +571,15 @@ export const NodeView = (props: {
                   const x1 =
                     -nodeViewBoundingBox.x + outRect.x + 3 + outRect.width / 2;
                   const y1 =
-                    -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
+                    -nodeViewBoundingBox.y +
+                    // 53 +
+                    outRect.y -
+                    1 +
+                    outRect.height / 2;
                   return (
                     <WireOverlay
                       key={`${inputKey}`}
-                      origin={nodeViewBoundingBox}
+                      origin={nodeViewHeight.height}
                       nodeTo={node}
                       inputKey={inputKey}
                       outputKey={outputKey}
