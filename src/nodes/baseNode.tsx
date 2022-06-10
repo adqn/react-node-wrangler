@@ -1,6 +1,7 @@
 import produce, { applyPatches, enablePatches, Patch } from "immer";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Draggable from "react-draggable";
+import { NodeViewContext } from "./nodeView-context";
 
 export interface SinkDefinition {
   className: "wire";
@@ -117,6 +118,7 @@ export const VisualNode = (props: {
     setIoRefs(newIoRefs);
     setBoundingBox(props.index, io, key, el.getBoundingClientRect());
   };
+  const nodeViewContext = useContext(NodeViewContext);
 
   return (
     <Draggable
@@ -126,14 +128,18 @@ export const VisualNode = (props: {
           const io = "input";
           const indexIoKey = getIndexIoKey({ index: props.index, io, key });
           const el = ioRefs[indexIoKey];
-          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+          const rect = el.getBoundingClientRect();
+          rect.y += nodeViewContext.heightDelta;
+          setBoundingBox(props.index, io, key, rect);
         });
 
         Object.keys(node.outputs(props.nodes)).forEach((key) => {
           const io = "output";
           const indexIoKey = getIndexIoKey({ index: props.index, io, key });
           const el = ioRefs[indexIoKey];
-          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+          const rect = el.getBoundingClientRect();
+          rect.y += nodeViewContext.heightDelta;
+          setBoundingBox(props.index, io, key, rect);
         });
       }}
     >

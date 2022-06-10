@@ -50,11 +50,11 @@ const NestedNodeRender = (props: {
       <Resizable
         style={{
           position: "absolute",
-          bottom: nodeViewHeight.height,
+          bottom: nodeViewHeight.height + 2,
         }}
         defaultSize={{
-          height: "250px",
-          width: "0",
+          height: "200px",
+          width: "100%",
         }}
         minWidth={"100%"}
         enable={{

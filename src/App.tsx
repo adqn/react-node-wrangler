@@ -4,7 +4,6 @@ import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
-// import './App.css';
 import { NodeView } from "./nodes/NodeView";
 import { ObjectNode } from "./nodes/constantNode/objectNode";
 import { SpreadNode } from "./nodes/constantNode/spreadNode";
@@ -12,6 +11,7 @@ import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
 import { ControlOverlay } from "./Components/ControlOverlay";
 import { NodeViewContext } from "./nodes/nodeView-context";
+import "./App.css";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
   const nodeNameMap = {
@@ -135,17 +135,16 @@ const App = () => {
   const nodes = nodeDefinitions.map(createNode);
 
   const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
-  const [nodeViewHeight, setNodeViewHeight] = useState<number>(400);
+  const [nodeViewHeight, setNodeViewHeight] = useState<number>(300);
   const [nodeViewHeightDelta, setNodeViewHeightDelta] = useState<number>(0);
 
   return (
     <div
       className="App"
-      style={
-        {
-          // display: "block",
-        }
-      }
+      style={{
+        // display: "block",
+        overflow: "hidden",
+      }}
     >
       <NodeViewContext.Provider
         value={{
@@ -162,11 +161,11 @@ const App = () => {
         <Resizable
           style={{
             position: "absolute",
-            bottom: "5px",
+            bottom: "0px",
           }}
           defaultSize={{
-            height: 400,
-            width: 0,
+            height: 300,
+            width: "100%",
           }}
           minWidth={"100%"}
           enable={{

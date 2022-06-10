@@ -8,10 +8,11 @@ const SVGCanvas = (props: { children: any }) => {
   return (
     <div
       style={{
+        width: "100%",
+        height: "100%",
         position: "absolute",
         bottom: nodeViewHeight.heightDelta,
-        height: "100%",
-        width: "100%",
+        // left: "0px",
         pointerEvents: "none",
       }}
     >
@@ -23,7 +24,7 @@ const SVGCanvas = (props: { children: any }) => {
         height="100%"
         style={{
           // position: "absolute",
-          // bottom: 0,
+          // bottom: nodeViewHeight.heightDelta,
           left: "0px",
         }}
         pointerEvents={"none"}
@@ -512,7 +513,7 @@ export const NodeView = (props: {
         // width: "100%",
         height: "100%",
         // bottom: "0px",
-        paddingTop: 30,
+        // paddingTop: 30,
         borderTop: "2px solid grey",
         background: "lightgrey",
         overflow: "scroll",
@@ -557,7 +558,11 @@ export const NodeView = (props: {
               const x2 =
                 -nodeViewBoundingBox.x + inRect.x - 3 + inRect.width / 2;
               const y2 =
-                -nodeViewBoundingBox.y + inRect.y - 1 + inRect.height / 2;
+                -nodeViewBoundingBox.y +
+                // nodeViewHeight.heightDelta +
+                inRect.y -
+                1 +
+                inRect.height / 2;
 
               if (node.isWire(value)) {
                 const outputKey = getIndexIoKey({
@@ -575,11 +580,12 @@ export const NodeView = (props: {
                     // 53 +
                     outRect.y -
                     1 +
+                    // nodeViewHeight.heightDelta +
                     outRect.height / 2;
                   return (
                     <WireOverlay
                       key={`${inputKey}`}
-                      origin={nodeViewHeight.height}
+                      origin={nodeViewBoundingBox}
                       nodeTo={node}
                       inputKey={inputKey}
                       outputKey={outputKey}
