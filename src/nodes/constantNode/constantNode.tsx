@@ -9,6 +9,7 @@ export class ConstantNode extends BaseNode {
   outputs(nodes: BaseNode[]) {
     const constant = this.computedInputs(nodes).c;
     return {
+      raw: constant,
       string: `${constant}`,
       number: Number(constant),
     };

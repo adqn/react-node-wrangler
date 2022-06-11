@@ -1,20 +1,37 @@
-import produce, { applyPatches, enablePatches, Patch } from "immer";
-import React, { useState } from "react";
+import produce, { enablePatches } from "immer";
+import React from "react";
 import Draggable from "react-draggable";
 
 export interface SinkDefinition {
+  className: "wire";
   index: number;
   attr: string;
 }
 
+type NonNestedJson =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: string | number | boolean | null };
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | NonNestedJson[]
+  | { [key: string]: NonNestedJson };
+
 export interface NodeInputs {
-  [key: string]: undefined | number | string | SinkDefinition;
+  [key: string]: Json | SinkDefinition;
 }
 
 export interface NodeDefinition {
   className: string;
   title: string;
   inputs: NodeInputs;
+  attrs?: any;
 }
 
 type OutputValue = any;
@@ -48,25 +65,23 @@ export const VisualNode = (props: {
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex?: (index: number) => void;
-  setBoundingBox?: (index: number, io: IO, key: string, rect: DOMRect) => void;
+  setIoRef?: (index: number, io: IO, key: string, el: any) => void;
+  updateBoundingBox?: (index: number, io: IO, key: string) => void;
 }) => {
   const node = props.nodes[props.index];
-  const setBoundingBox = props.setBoundingBox
-    ? props.setBoundingBox
+  const setIoRef = props.setIoRef ? props.setIoRef : () => null;
+  const updateBoundingBox = props.updateBoundingBox
+    ? props.updateBoundingBox
     : () => null;
 
   // FIXME: In future, highlight bad type of input or missing inputs
   node.validateInputs(props.nodes);
-  const getNodes = () => {
-    const newNodes = [...props.nodes.map((node) => node.getDefinition())];
-    return newNodes;
-  };
-
   const handleChange = (key: string, value: string) => {
-    const newNodes = getNodes();
-    const node = newNodes[props.index];
-    node.inputs[key] = value;
-    props.setNodes(newNodes);
+    props.setNodes(
+      produce((nodeDefinitions) => {
+        nodeDefinitions[props.index].inputs[key] = value;
+      })
+    );
   };
 
   const handleClick = () => {
@@ -75,7 +90,6 @@ export const VisualNode = (props: {
     }
   };
 
-  const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
   const getIndexIoKey = ({
     index,
     io,
@@ -85,25 +99,6 @@ export const VisualNode = (props: {
     io: IO;
     key: string;
   }) => `${index}-${io}-${key}`;
-  const updates: Patch[] = [];
-  const setIoRef = (index: number, io: IO, key: string, el: any) => {
-    const indexIoKey = getIndexIoKey({ index, io, key });
-    const oldRef = !!ioRefs[indexIoKey];
-
-    if (oldRef) {
-      return;
-    }
-
-    const newIoRefs = produce(
-      applyPatches(ioRefs, updates),
-      (ioRefs) => {
-        ioRefs[indexIoKey] = el;
-      },
-      (patches) => updates.push(...patches)
-    );
-    setIoRefs(newIoRefs);
-    setBoundingBox(props.index, io, key, el.getBoundingClientRect());
-  };
 
   return (
     <Draggable
@@ -111,16 +106,12 @@ export const VisualNode = (props: {
       onDrag={() => {
         Object.keys(node.inputs).forEach((key) => {
           const io = "input";
-          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
-          const el = ioRefs[indexIoKey];
-          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+          updateBoundingBox(props.index, io, key);
         });
 
         Object.keys(node.outputs(props.nodes)).forEach((key) => {
           const io = "output";
-          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
-          const el = ioRefs[indexIoKey];
-          setBoundingBox(props.index, io, key, el.getBoundingClientRect());
+          updateBoundingBox(props.index, io, key);
         });
       }}
     >
@@ -172,8 +163,8 @@ export const VisualNode = (props: {
                   <SinkSourceIndicator isFromSink={true} />
                 </span>{" "}
                 {key}:
-                {isFromSink ? (
-                  defaultValue
+                {isFromSink || typeof defaultValue === "object" ? (
+                  JSON.stringify(defaultValue)
                 ) : (
                   <input
                     style={{
@@ -200,7 +191,7 @@ export const VisualNode = (props: {
                   display: "block",
                 }}
               >
-                {key}: {value}
+                {key}: {JSON.stringify(value)}
                 <div
                   style={{
                     position: "absolute",
@@ -226,27 +217,49 @@ export const VisualNode = (props: {
 export abstract class BaseNode {
   title: string;
   inputs: NodeInputs;
+  attrs?: any;
   abstract validateInputs(nodes: BaseNode[]): void;
   abstract outputs(nodes: BaseNode[]): NodeOutputs;
 
-  constructor({ title, inputs }: { title: string; inputs: NodeInputs }) {
+  constructor({
+    title,
+    inputs,
+    attrs,
+  }: {
+    title: string;
+    inputs: NodeInputs;
+    attrs?: any;
+  }) {
     this.title = title;
     this.inputs = inputs;
+    this.attrs = attrs;
   }
 
   getDefinition(): NodeDefinition {
+    const attrs: { attrs?: any } = {};
+    if (this.attrs) {
+      attrs.attrs = this.attrs;
+    }
     return {
       className: this.constructor.name,
       title: this.title,
       inputs: this.inputs,
+      ...attrs,
     };
+  }
+
+  isWire(value: Json | SinkDefinition): value is SinkDefinition {
+    return (
+      typeof value === "object" &&
+      (value as SinkDefinition).className === "wire"
+    );
   }
 
   getInputValue(key: string, nodes: BaseNode[]): [OutputValue, boolean] {
     let defaultValue = this.inputs[key];
     let isFromSink = false;
 
-    if (typeof defaultValue === "object") {
+    if (this.isWire(defaultValue)) {
       isFromSink = true;
       const node = nodes[defaultValue.index];
       defaultValue = node.getOutputValue(defaultValue.attr, nodes);
@@ -274,7 +287,7 @@ export abstract class BaseNode {
     index: number,
     nodes: BaseNode[],
     setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>
-  ) {
+  ): JSX.Element {
     return (
       <VisualNode
         index={index}
