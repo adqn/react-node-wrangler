@@ -1,7 +1,6 @@
-import produce, { applyPatches, enablePatches, Patch } from "immer";
-import React, { useState, useContext } from "react";
+import produce, { enablePatches } from "immer";
+import React from "react";
 import Draggable from "react-draggable";
-import { NodeViewContext } from "./nodeView-context";
 
 export interface SinkDefinition {
   className: "wire";
@@ -66,11 +65,13 @@ export const VisualNode = (props: {
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex?: (index: number) => void;
-  setBoundingBox?: (index: number, io: IO, key: string, rect: DOMRect) => void;
+  setIoRef?: (index: number, io: IO, key: string, el: any) => void;
+  updateBoundingBox?: (index: number, io: IO, key: string) => void;
 }) => {
   const node = props.nodes[props.index];
-  const setBoundingBox = props.setBoundingBox
-    ? props.setBoundingBox
+  const setIoRef = props.setIoRef ? props.setIoRef : () => null;
+  const updateBoundingBox = props.updateBoundingBox
+    ? props.updateBoundingBox
     : () => null;
 
   // FIXME: In future, highlight bad type of input or missing inputs
@@ -89,7 +90,6 @@ export const VisualNode = (props: {
     }
   };
 
-  const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
   const getIndexIoKey = ({
     index,
     io,
@@ -99,26 +99,6 @@ export const VisualNode = (props: {
     io: IO;
     key: string;
   }) => `${index}-${io}-${key}`;
-  const updates: Patch[] = [];
-  const setIoRef = (index: number, io: IO, key: string, el: any) => {
-    const indexIoKey = getIndexIoKey({ index, io, key });
-    const oldRef = !!ioRefs[indexIoKey];
-
-    if (oldRef) {
-      return;
-    }
-
-    const newIoRefs = produce(
-      applyPatches(ioRefs, updates),
-      (ioRefs) => {
-        ioRefs[indexIoKey] = el;
-      },
-      (patches) => updates.push(...patches)
-    );
-    setIoRefs(newIoRefs);
-    setBoundingBox(props.index, io, key, el.getBoundingClientRect());
-  };
-  const nodeViewContext = useContext(NodeViewContext);
 
   return (
     <Draggable
@@ -126,20 +106,12 @@ export const VisualNode = (props: {
       onDrag={() => {
         Object.keys(node.inputs).forEach((key) => {
           const io = "input";
-          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
-          const el = ioRefs[indexIoKey];
-          const rect = el.getBoundingClientRect();
-          rect.y += nodeViewContext.heightDelta;
-          setBoundingBox(props.index, io, key, rect);
+          updateBoundingBox(props.index, io, key);
         });
 
         Object.keys(node.outputs(props.nodes)).forEach((key) => {
           const io = "output";
-          const indexIoKey = getIndexIoKey({ index: props.index, io, key });
-          const el = ioRefs[indexIoKey];
-          const rect = el.getBoundingClientRect();
-          rect.y += nodeViewContext.heightDelta;
-          setBoundingBox(props.index, io, key, rect);
+          updateBoundingBox(props.index, io, key);
         });
       }}
     >

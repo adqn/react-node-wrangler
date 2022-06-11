@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from "react";
+import React, { useState } from "react";
 import { Resizable } from "re-resizable";
 import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";

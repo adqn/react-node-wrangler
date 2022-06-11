@@ -4,14 +4,13 @@ import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 import { NodeViewContext } from "./nodeView-context";
 
 const SVGCanvas = (props: { children: any }) => {
-  const nodeViewHeight = useContext(NodeViewContext);
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
         position: "absolute",
-        bottom: nodeViewHeight.heightDelta,
+        bottom: 0,
         // left: "0px",
         pointerEvents: "none",
       }}
@@ -24,8 +23,8 @@ const SVGCanvas = (props: { children: any }) => {
         height="100%"
         style={{
           // position: "absolute",
-          // bottom: nodeViewHeight.heightDelta,
           left: "0px",
+          // bottom: nodeViewHeight.heightDelta,
         }}
         pointerEvents={"none"}
       >
@@ -466,6 +465,7 @@ export const NodeView = (props: {
   setRenderIndex: (index: number) => void;
 }) => {
   const [boundingBoxes, setBoundingBoxes] = useState<boundingBoxes>({});
+  const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
   const [nodeViewBoundingBox, setNodeViewBoundingBox] =
     useState<DOMRect | null>(null);
   const getIndexIoKey = ({
@@ -478,14 +478,11 @@ export const NodeView = (props: {
     key: string;
   }) => `${index}-${io}-${key}`;
 
-  const updates: Patch[] = [];
-  const setBoundingBox = (
-    index: number,
-    io: IO,
-    key: string,
-    rect: DOMRect
-  ) => {
+  const boxUpdates: Patch[] = [];
+  const updateBoundingBox = (index: number, io: IO, key: string, el?: any) => {
     const indexIoKey = getIndexIoKey({ index, io, key });
+    el = el ?? ioRefs[indexIoKey];
+    const rect = el.getBoundingClientRect();
     const oldRect = boundingBoxes[indexIoKey];
 
     if (oldRect && oldRect.x === rect.x && oldRect.y === rect.y) {
@@ -493,17 +490,47 @@ export const NodeView = (props: {
     }
 
     const newBoundingBoxes = produce(
-      applyPatches(boundingBoxes, updates),
+      applyPatches(boundingBoxes, boxUpdates),
       (boundingBoxes) => {
         boundingBoxes[indexIoKey] = rect;
       },
-      (patches) => updates.push(...patches)
+      (patches) => boxUpdates.push(...patches)
     );
 
     setBoundingBoxes(newBoundingBoxes);
   };
 
+  const refUpdates: Patch[] = [];
+  const setIoRef = (index: number, io: IO, key: string, el: any) => {
+    const indexIoKey = getIndexIoKey({ index, io, key });
+    const oldRef = !!ioRefs?.[indexIoKey];
+
+    if (oldRef) {
+      return;
+    }
+
+    const newIoRefs = produce(
+      applyPatches(ioRefs, refUpdates),
+      (ioRefs) => {
+        ioRefs[indexIoKey] = el;
+      },
+      (patches) => refUpdates.push(...patches)
+    );
+    setIoRefs(newIoRefs);
+    updateBoundingBox(index, io, key, el);
+  };
+
   const nodeViewHeight = useContext(NodeViewContext);
+
+  useEffect(() => {
+    setBoundingBoxes(
+      produce((updatedBoundingBoxes) => {
+        Object.entries(ioRefs).forEach(([indexIoKey, el]) => {
+          updatedBoundingBoxes[indexIoKey] = el.getBoundingClientRect();
+        });
+      })
+    );
+  }, [nodeViewHeight.height]);
 
   return (
     <div
@@ -541,7 +568,8 @@ export const NodeView = (props: {
             nodes={props.nodes}
             setNodes={props.setNodes}
             setRenderIndex={props.setRenderIndex}
-            setBoundingBox={setBoundingBox}
+            updateBoundingBox={updateBoundingBox}
+            setIoRef={setIoRef}
           />
         );
       })}
@@ -577,7 +605,6 @@ export const NodeView = (props: {
                     -nodeViewBoundingBox.x + outRect.x + 3 + outRect.width / 2;
                   const y1 =
                     -nodeViewBoundingBox.y +
-                    // 53 +
                     outRect.y -
                     1 +
                     // nodeViewHeight.heightDelta +
@@ -613,6 +640,7 @@ export const NodeView = (props: {
                   />
                 );
               }
+              return null;
             });
           })
           .reduce((acc, curr) => {

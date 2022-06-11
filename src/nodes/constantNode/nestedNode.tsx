@@ -1,7 +1,7 @@
 import produce from "immer";
 import { Resizable } from "re-resizable";
 import { useState, useContext } from "react";
-import { BaseNode, Json, NodeDefinition, NodeInputs } from "../baseNode";
+import { BaseNode, NodeDefinition, NodeInputs } from "../baseNode";
 import { AddNode, MultiplyNode } from "../calculationNode";
 import { HtmlNode } from "../htmlNode";
 import { NodeView } from "../NodeView";
@@ -53,7 +53,7 @@ const NestedNodeRender = (props: {
           bottom: nodeViewHeight.height + 2,
         }}
         defaultSize={{
-          height: "200px",
+          height: 300,
           width: "100%",
         }}
         minWidth={"100%"}
