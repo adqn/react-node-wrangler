@@ -1,10 +1,11 @@
+import produce from "immer";
 import React, { useState } from "react";
 import { setSyntheticLeadingComments } from "typescript";
 import { BaseNode, NodeDefinition } from "../../nodes/baseNode";
 import { ConstantNode } from "../../nodes/constantNode";
 
 const AddNode = (props: {
-  nodes: NodeDefinition[];
+  nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
 }) => {
   const NewNode = {
@@ -27,8 +28,11 @@ const AddNode = (props: {
         cursor: "pointer",
       }}
       onClick={() => {
-        const nodes = [...props.nodes, NewNode];
-        props.setNodes(nodes);
+        props.setNodes(
+          produce((nodeDefinitions) => {
+            nodeDefinitions[props.nodes.length] = NewNode;
+          })
+        );
       }}
     >
       +
@@ -37,11 +41,11 @@ const AddNode = (props: {
 };
 
 export const ControlOverlay = (props: {
-  nodes: NodeDefinition[];
+  nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
-  nodeViewHeight: number | string;
+  // nodeViewHeight: number | string;
 }) => {
-  const [height, setHeight] = useState<number | string>(props.nodeViewHeight);
+  // const [height, setHeight] = useState<number | string>(props.nodeViewHeight);
   return (
     <div
       style={{

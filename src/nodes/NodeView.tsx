@@ -1,6 +1,7 @@
 import produce, { enablePatches, applyPatches, Patch } from "immer";
 import React, { useEffect, useState, useCallback, useContext } from "react";
 import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
+import { ControlOverlay } from "../Components/ControlOverlay";
 import { NodeViewContext } from "./nodeView-context";
 
 const SVGCanvas = (props: { children: any }) => {
@@ -559,6 +560,11 @@ export const NodeView = (props: {
         console.log(nodeViewBoundingBox, nodeViewHeight);
       }}
     >
+      <ControlOverlay
+        nodes={props.nodes}
+        setNodes={props.setNodes}
+        // nodeViewHeight={nodeViewHeight}
+      />
       {props.nodes.map((node, index) => {
         return (
           <VisualNode

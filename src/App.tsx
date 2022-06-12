@@ -153,11 +153,6 @@ const App = () => {
         }}
       >
         {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-        <ControlOverlay
-          nodes={nodeDefinitions}
-          setNodes={setNodes}
-          nodeViewHeight={nodeViewHeight}
-        />
         <Resizable
           style={{
             position: "absolute",
