@@ -152,6 +152,7 @@ export const VisualNode = (props: {
                 key={getIndexIoKey({ index: props.index, io: "input", key })}
                 style={{
                   display: "block",
+                  height: 20,
                 }}
               >
                 <span
