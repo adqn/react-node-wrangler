@@ -9,7 +9,6 @@ import { ObjectNode } from "./nodes/constantNode/objectNode";
 import { SpreadNode } from "./nodes/constantNode/spreadNode";
 import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
-import { ControlOverlay } from "./Components/ControlOverlay";
 import { NodeViewContext } from "./nodes/nodeView-context";
 import "./App.css";
 

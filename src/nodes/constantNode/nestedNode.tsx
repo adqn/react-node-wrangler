@@ -160,12 +160,12 @@ export class NestedNode extends BaseNode {
     > = (newAttrs) => {
       newAttrs =
         typeof newAttrs === "function" ? newAttrs(this.attrs) : newAttrs;
-      const newDefinion = produce(this.getDefinition(), (nodeDefinition) => {
+      const newDefinition = produce(this.getDefinition(), (nodeDefinition) => {
         nodeDefinition.attrs = newAttrs;
       });
       setNodes(
         produce((nodeDefinitions) => {
-          nodeDefinitions[index] = newDefinion;
+          nodeDefinitions[index] = newDefinition;
         })
       );
     };
