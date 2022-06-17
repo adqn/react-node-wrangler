@@ -56,80 +56,9 @@ const App = () => {
         obj: {},
       },
     },
-    // {
-    //   className: ConstantNode.name,
-    //   title: "four",
-    //   inputs: {
-    //     c: 4,
-    //   },
-    // },
-    // {
-    //   className: AddNode.name,
-    //   title: "Add",
-    //   inputs: {
-    //     a: {
-    //       className: "wire",
-    //       index: 0,
-    //       attr: "number",
-    //     },
-    //     b: {
-    //       className: "wire",
-    //       index: 1,
-    //       attr: "number",
-    //     },
-    //   },
-    // },
-    // {
-    //   className: MultiplyNode.name,
-    //   title: "Multiply",
-    //   inputs: {
-    //     x: {
-    //       className: "wire",
-    //       index: 0,
-    //       attr: "number",
-    //     },
-    //     y: {
-    //       className: "wire",
-    //       index: 1,
-    //       attr: "number",
-    //     },
-    //   },
-    // },
-    // {
-    //   className: AddNode.name,
-    //   title: "AddNested",
-    //   inputs: {
-    //     a: {
-    //       className: "wire",
-    //       index: 2,
-    //       attr: "sum",
-    //     },
-    //     b: {
-    //       className: "wire",
-    //       index: 3,
-    //       attr: "product",
-    //     },
-    //   },
-    // },
-    // {
-    //   className: HtmlNode.name,
-    //   title: "html sink",
-    //   inputs: {
-    //     html: "replace with wire",
-    //   },
-    // },
-    // {
-    //   className: HtmlNode.name,
-    //   title: "html sink 2",
-    //   inputs: {
-    //     html: {
-    //       className: "wire",
-    //       index: 4,
-    //       attr: "sum",
-    //     },
-    //   },
-    // },
   ]);
+
+  const [nodeGroups, setNodeGroups] = useState<NodeDefinition[][]>();
 
   const nodes = nodeDefinitions.map(createNode);
 
