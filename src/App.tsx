@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Resizable } from "re-resizable";
-import { NodeDefinition } from "./nodes/baseNode";
+import { NodeDefinition, NodeGroup } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
@@ -10,6 +10,7 @@ import { SpreadNode } from "./nodes/constantNode/spreadNode";
 import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
 import { NodeViewContext } from "./nodes/nodeView-context";
+import produce from "immer";
 import "./App.css";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
@@ -28,43 +29,54 @@ const createNode = ({ className, ...definition }: NodeDefinition) => {
   return new NodeClass(definition as any);
 };
 
+const nodeGroup1: NodeDefinition[] = [
+  {
+    className: ConstantNode.name,
+    title: "two",
+    inputs: {
+      c: 2,
+    },
+  },
+  {
+    className: NestedNode.name,
+    title: "Nested POC",
+    inputs: {},
+  },
+  {
+    className: ObjectNode.name,
+    title: "Object",
+    inputs: {
+      obj: {},
+    },
+  },
+  {
+    className: SpreadNode.name,
+    title: "Spread",
+    inputs: {
+      obj: {},
+    },
+  },
+];
+
 const App = () => {
-  const [nodeDefinitions, setNodes] = useState<NodeDefinition[]>([
-    {
-      className: ConstantNode.name,
-      title: "two",
-      inputs: {
-        c: 2,
-      },
-    },
-    {
-      className: NestedNode.name,
-      title: "Nested POC",
-      inputs: {},
-    },
-    {
-      className: ObjectNode.name,
-      title: "Object",
-      inputs: {
-        obj: {},
-      },
-    },
-    {
-      className: SpreadNode.name,
-      title: "Spread",
-      inputs: {
-        obj: {},
-      },
-    },
+  const [nodeDefinitions, setNodes] = useState<NodeDefinition[]>(nodeGroup1);
+
+  // const [nodeGroups, setNodeGroups] = useState<NodeGroup[]>([
+  //   {
+  //     group: nodeGroup1,
+  //     nested: false, // if nested, render as block-level div
+  //   },
+  // ]);
+  const [nodeGroups, setNodeGroups] = useState<NodeDefinition[][]>([
+    nodeGroup1,
   ]);
+  const [groupIndex, setGroupIndex] = useState<number>(nodeGroups.length - 1);
 
-  const [nodeGroups, setNodeGroups] = useState<NodeDefinition[][]>();
-
-  const nodes = nodeDefinitions.map(createNode);
-
-  const [renderIndex, setRenderIndex] = useState<number>(nodes.length - 1);
+  const [renderIndex, setRenderIndex] = useState<number>(0);
   const [nodeViewHeight, setNodeViewHeight] = useState<number>(300);
+  const [nodeViewHeights, setNodeViewHeights] = useState<number[]>([300]);
   const [nodeViewHeightDelta, setNodeViewHeightDelta] = useState<number>(0);
+  const nodes = nodeGroups[groupIndex].map(createNode);
 
   return (
     <div
@@ -74,44 +86,57 @@ const App = () => {
         overflow: "hidden",
       }}
     >
+      {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
       <NodeViewContext.Provider
         value={{
           height: nodeViewHeight,
           heightDelta: nodeViewHeightDelta,
         }}
       >
-        {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
-        <Resizable
+        <div
+          className="NodeViewArea"
           style={{
+            display: "block",
             position: "absolute",
             bottom: "0px",
-          }}
-          defaultSize={{
-            height: 300,
             width: "100%",
           }}
-          minWidth={"100%"}
-          enable={{
-            top: true,
-            bottom: false,
-            right: false,
-            left: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topRight: false,
-            topLeft: false,
-          }}
-          onResize={(e, direction, ref, d) => {
-            setNodeViewHeight(ref.clientHeight);
-            setNodeViewHeightDelta(d.height);
-          }}
         >
-          <NodeView
-            nodes={nodes}
-            setNodes={setNodes}
-            setRenderIndex={setRenderIndex}
-          />
-        </Resizable>
+          {nodeGroups.map((nodeGroup, index) => {
+            const nodes = nodeGroup.map(createNode);
+            return (
+              <Resizable
+                defaultSize={{
+                  height: 300,
+                  width: "100%",
+                }}
+                minWidth={"100%"}
+                enable={{
+                  top: true,
+                  bottom: false,
+                  right: false,
+                  left: false,
+                  bottomRight: false,
+                  bottomLeft: false,
+                  topRight: false,
+                  topLeft: false,
+                }}
+                onResize={(e, direction, ref, d) => {
+                  const heights = [...nodeViewHeights];
+                  heights[index] = ref.clientHeight;
+                  setNodeViewHeights(heights);
+                }}
+              >
+                <NodeView
+                  nodes={nodes}
+                  setNodes={setNodes}
+                  setRenderIndex={setRenderIndex}
+                  containerHeight={nodeViewHeights[index]}
+                />
+              </Resizable>
+            );
+          })}
+        </div>
       </NodeViewContext.Provider>
     </div>
   );

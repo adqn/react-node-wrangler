@@ -1,6 +1,12 @@
 import produce, { enablePatches, applyPatches, Patch } from "immer";
 import React, { useEffect, useState, useContext } from "react";
-import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
+import {
+  BaseNode,
+  NodeDefinition,
+  NodeGroup,
+  VisualNode,
+  IO,
+} from "./baseNode";
 import { ControlOverlay } from "../Components/ControlOverlay";
 import {
   WireOverlay,
@@ -46,6 +52,7 @@ export const NodeView = (props: {
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex: (index: number) => void;
+  containerHeight: number;
 }) => {
   const [boundingBoxes, setBoundingBoxes] = useState<boundingBoxes>({});
   const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
@@ -113,7 +120,7 @@ export const NodeView = (props: {
         });
       })
     );
-  }, [nodeViewHeight.height]);
+  }, [props.containerHeight]);
 
   return (
     <div
@@ -139,7 +146,7 @@ export const NodeView = (props: {
           return;
         }
         setNodeViewBoundingBox(rect);
-        console.log(nodeViewBoundingBox, nodeViewHeight);
+        console.log(nodeViewBoundingBox, props.containerHeight);
       }}
     >
       <ControlOverlay nodes={props.nodes} setNodes={props.setNodes} />

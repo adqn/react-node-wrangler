@@ -68,11 +68,12 @@ const NestedNodeRender = (props: {
           topLeft: false,
         }}
       >
-        <NodeView
+        {/* <NodeView
+          nodeGroups={}
           nodes={props.nodes}
           setNodes={props.setNodes}
           setRenderIndex={setRenderIndex}
-        />
+        /> */}
       </Resizable>
     </div>
   );
