@@ -49,8 +49,10 @@ const SVGCanvas = (props: { children: any }) => {
 enablePatches();
 
 export const NodeView = (props: {
+  index: number;
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   setRenderIndex: (index: number) => void;
   containerHeight: number;
 }) => {
@@ -194,6 +196,7 @@ export const NodeView = (props: {
                     -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                   return (
                     <WireOverlay
+                      index={props.index}
                       key={`${inputKey}`}
                       origin={nodeViewBoundingBox}
                       nodeTo={node}
@@ -202,6 +205,8 @@ export const NodeView = (props: {
                       boundingBoxes={boundingBoxes}
                       nodes={props.nodes}
                       setNodes={props.setNodes}
+                      nodeGroupIndex={props.index}
+                      setNodeGroups={props.setNodeGroups}
                       x1={x1}
                       y1={y1}
                       x2={x2}
@@ -212,12 +217,14 @@ export const NodeView = (props: {
               } else {
                 return (
                   <InputOverlay
+                    index={props.index}
                     key={`${inputKey}`}
                     origin={nodeViewBoundingBox}
                     inputKey={inputKey}
                     boundingBoxes={boundingBoxes}
                     nodes={props.nodes}
                     setNodes={props.setNodes}
+                    setNodeGroups={props.setNodeGroups}
                     x1={x2}
                     y1={y2}
                   />

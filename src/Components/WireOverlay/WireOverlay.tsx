@@ -7,6 +7,7 @@ export interface boundingBoxes {
 }
 
 export const WireOverlay = (props: {
+  index: number;
   origin: any;
   nodeTo: BaseNode;
   inputKey: string;
@@ -14,6 +15,8 @@ export const WireOverlay = (props: {
   boundingBoxes: boundingBoxes;
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  nodeGroupIndex: number;
+  setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   x1: number;
   y1: number;
   x2: number;
@@ -129,15 +132,15 @@ export const WireOverlay = (props: {
           const currentInput = getIndexAsJson(props.inputKey);
           if (foundInput.node !== currentInput.node) {
             if (isInput) {
-              props.setNodes(
-                produce((nodeDefinitions) => {
-                  nodeDefinitions[currentInput.index] = produce(
+              props.setNodeGroups(
+                produce((nodeGroups) => {
+                  nodeGroups[props.index][currentInput.index] = produce(
                     currentInput.node.getDefinition(),
                     (def) => {
                       def.inputs[currentInput.key] = "";
                     }
                   );
-                  nodeDefinitions[foundInput.index] = produce(
+                  nodeGroups[props.index][foundInput.index] = produce(
                     foundInput.node.getDefinition(),
                     (def) => {
                       def.inputs[foundInput.key] = {
@@ -149,6 +152,26 @@ export const WireOverlay = (props: {
                   );
                 })
               );
+              // props.setNodes(
+              //   produce((nodeDefinitions) => {
+              //     nodeDefinitions[currentInput.index] = produce(
+              //       currentInput.node.getDefinition(),
+              //       (def) => {
+              //         def.inputs[currentInput.key] = "";
+              //       }
+              //     );
+              //     nodeDefinitions[foundInput.index] = produce(
+              //       foundInput.node.getDefinition(),
+              //       (def) => {
+              //         def.inputs[foundInput.key] = {
+              //           className: "wire",
+              //           index: currentOutput.index,
+              //           attr: currentOutput.key,
+              //         };
+              //       }
+              //     );
+              //   })
+              // );
             }
           }
         });
@@ -244,11 +267,13 @@ export const WireOverlay = (props: {
 };
 
 export const InputOverlay = (props: {
+  index: number;
   origin: any;
   inputKey: string;
   boundingBoxes: boundingBoxes;
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   x1: number;
   y1: number;
 }) => {
@@ -361,9 +386,9 @@ export const InputOverlay = (props: {
           const currentInput = getIndexAsJson(props.inputKey);
           if (foundOutput.node !== currentInput.node) {
             if (isOutput) {
-              props.setNodes(
-                produce((nodeDefinitions) => {
-                  nodeDefinitions[currentInput.index] = produce(
+              props.setNodeGroups(
+                produce((nodeGroups) => {
+                  nodeGroups[props.index][currentInput.index] = produce(
                     currentInput.node.getDefinition(),
                     (def) => {
                       def.inputs[currentInput.key] = {
