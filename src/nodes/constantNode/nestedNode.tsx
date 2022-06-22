@@ -46,7 +46,8 @@ const NestedNodeRender = (props: {
       {props.nodes[renderIndex].render(
         renderIndex,
         props.nodes,
-        props.setNodes
+        props.setNodes,
+        true
       )}
       <Resizable
         style={{

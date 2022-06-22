@@ -74,7 +74,7 @@ const App = () => {
         overflow: "hidden",
       }}
     >
-      {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+      {nodes[renderIndex].render(renderIndex, nodes, setNodes, true)}
       <div
         className="NodeViewArea"
         style={{

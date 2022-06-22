@@ -62,6 +62,7 @@ enablePatches();
 export const VisualNode = (props: {
   index: number;
   title: string;
+  rendered?: boolean;
   nodes: Array<BaseNode>;
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setRenderIndex?: (index: number) => void;
@@ -120,7 +121,7 @@ export const VisualNode = (props: {
         style={{
           position: "relative",
           display: "inline-block",
-          left: `${props.index * 20}px`,
+          left: props.rendered ? 5 : `${5 + props.index * 20}px`,
           minHeight: "150px",
           minWidth: "150px",
           border: "1px solid black",
@@ -218,6 +219,7 @@ export const VisualNode = (props: {
 export abstract class BaseNode {
   title: string;
   inputs: NodeInputs;
+  rendered?: boolean;
   attrs?: any;
   abstract validateInputs(nodes: BaseNode[]): void;
   abstract outputs(nodes: BaseNode[]): NodeOutputs;
@@ -287,12 +289,14 @@ export abstract class BaseNode {
   render(
     index: number,
     nodes: BaseNode[],
-    setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>
+    setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>,
+    rendered: boolean
   ): JSX.Element {
     return (
       <VisualNode
         index={index}
         title={this.title}
+        rendered={rendered}
         nodes={nodes}
         setNodes={setNodes}
       />
