@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Resizable } from "re-resizable";
-import { NodeDefinition, NodeGroup } from "./nodes/baseNode";
+import { NodeDefinition } from "./nodes/baseNode";
 import { AddNode, MultiplyNode } from "./nodes/calculationNode";
 import { ConstantNode } from "./nodes/constantNode";
 import { HtmlNode } from "./nodes/htmlNode";
@@ -9,8 +9,6 @@ import { ObjectNode } from "./nodes/constantNode/objectNode";
 import { SpreadNode } from "./nodes/constantNode/spreadNode";
 import { NestedNode } from "./nodes/constantNode/nestedNode";
 import { PassThruNode } from "./nodes/constantNode/passThruNode";
-import { NodeViewContext } from "./nodes/nodeView-context";
-import produce from "immer";
 import "./App.css";
 
 const createNode = ({ className, ...definition }: NodeDefinition) => {
@@ -64,7 +62,6 @@ const App = () => {
     nodeGroup1,
   ]);
   const [groupIndex, setGroupIndex] = useState<number>(nodeGroups.length - 1);
-
   const [renderIndex, setRenderIndex] = useState<number>(0);
   const [nodeViewHeights, setNodeViewHeights] = useState<number[]>([300]);
   const nodes = nodeGroups[groupIndex].map(createNode);
@@ -113,12 +110,12 @@ const App = () => {
               }}
             >
               <NodeView
-                index={index}
+                nodeGroupIndex={index}
                 nodes={nodes}
                 setNodes={setNodes}
                 setNodeGroups={setNodeGroups}
                 setRenderIndex={setRenderIndex}
-                containerHeight={nodeViewHeights[index]}
+                containerHeight={nodeViewHeights}
               />
             </Resizable>
           );

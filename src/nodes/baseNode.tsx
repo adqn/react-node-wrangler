@@ -34,11 +34,6 @@ export interface NodeDefinition {
   attrs?: any;
 }
 
-export interface NodeGroup {
-  group: NodeDefinition[];
-  nested: boolean;
-}
-
 type OutputValue = any;
 export type IO = "input" | "output";
 

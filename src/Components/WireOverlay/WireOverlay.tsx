@@ -7,14 +7,12 @@ export interface boundingBoxes {
 }
 
 export const WireOverlay = (props: {
-  index: number;
   origin: any;
   nodeTo: BaseNode;
   inputKey: string;
   outputKey: string;
   boundingBoxes: boundingBoxes;
   nodes: BaseNode[];
-  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   nodeGroupIndex: number;
   setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   x1: number;
@@ -134,13 +132,11 @@ export const WireOverlay = (props: {
             if (isInput) {
               props.setNodeGroups(
                 produce((nodeGroups) => {
-                  nodeGroups[props.index][currentInput.index] = produce(
-                    currentInput.node.getDefinition(),
-                    (def) => {
+                  nodeGroups[props.nodeGroupIndex][currentInput.index] =
+                    produce(currentInput.node.getDefinition(), (def) => {
                       def.inputs[currentInput.key] = "";
-                    }
-                  );
-                  nodeGroups[props.index][foundInput.index] = produce(
+                    });
+                  nodeGroups[props.nodeGroupIndex][foundInput.index] = produce(
                     foundInput.node.getDefinition(),
                     (def) => {
                       def.inputs[foundInput.key] = {
@@ -176,7 +172,7 @@ export const WireOverlay = (props: {
           }
         });
     }
-  }, [position, props.setNodes]);
+  }, [position, props.setNodeGroups]);
 
   useEffect(() => {
     const updatedPosition = (["x1", "x2", "y1", "y2"] as const).some(
@@ -267,12 +263,11 @@ export const WireOverlay = (props: {
 };
 
 export const InputOverlay = (props: {
-  index: number;
   origin: any;
   inputKey: string;
   boundingBoxes: boundingBoxes;
   nodes: BaseNode[];
-  setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
+  nodeGroupIndex: number;
   setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   x1: number;
   y1: number;
@@ -388,23 +383,21 @@ export const InputOverlay = (props: {
             if (isOutput) {
               props.setNodeGroups(
                 produce((nodeGroups) => {
-                  nodeGroups[props.index][currentInput.index] = produce(
-                    currentInput.node.getDefinition(),
-                    (def) => {
+                  nodeGroups[props.nodeGroupIndex][currentInput.index] =
+                    produce(currentInput.node.getDefinition(), (def) => {
                       def.inputs[currentInput.key] = {
                         className: "wire",
                         index: foundOutput.index,
                         attr: foundOutput.key,
                       };
-                    }
-                  );
+                    });
                 })
               );
             }
           }
         });
     }
-  }, [position, props.setNodes]);
+  }, [position, props.setNodeGroups]);
 
   useEffect(() => {
     const updatedPosition = (["x1", "y1"] as const).some(

@@ -1,19 +1,12 @@
 import produce, { enablePatches, applyPatches, Patch } from "immer";
-import React, { useEffect, useState, useContext } from "react";
-import {
-  BaseNode,
-  NodeDefinition,
-  NodeGroup,
-  VisualNode,
-  IO,
-} from "./baseNode";
+import React, { useEffect, useState } from "react";
+import { BaseNode, NodeDefinition, VisualNode, IO } from "./baseNode";
 import { ControlOverlay } from "../Components/ControlOverlay";
 import {
   WireOverlay,
   InputOverlay,
   boundingBoxes,
 } from "../Components/WireOverlay/WireOverlay";
-import { NodeViewContext } from "./nodeView-context";
 
 const SVGCanvas = (props: { children: any }) => {
   return (
@@ -49,12 +42,12 @@ const SVGCanvas = (props: { children: any }) => {
 enablePatches();
 
 export const NodeView = (props: {
-  index: number;
+  nodeGroupIndex: number;
   nodes: BaseNode[];
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   setRenderIndex: (index: number) => void;
-  containerHeight: number;
+  containerHeight: number[];
 }) => {
   const [boundingBoxes, setBoundingBoxes] = useState<boundingBoxes>({});
   const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
@@ -111,8 +104,6 @@ export const NodeView = (props: {
     setIoRefs(newIoRefs);
     updateBoundingBox(index, io, key, el);
   };
-
-  const nodeViewHeight = useContext(NodeViewContext);
 
   useEffect(() => {
     setBoundingBoxes(
@@ -196,7 +187,6 @@ export const NodeView = (props: {
                     -nodeViewBoundingBox.y + outRect.y - 1 + outRect.height / 2;
                   return (
                     <WireOverlay
-                      index={props.index}
                       key={`${inputKey}`}
                       origin={nodeViewBoundingBox}
                       nodeTo={node}
@@ -204,8 +194,7 @@ export const NodeView = (props: {
                       outputKey={outputKey}
                       boundingBoxes={boundingBoxes}
                       nodes={props.nodes}
-                      setNodes={props.setNodes}
-                      nodeGroupIndex={props.index}
+                      nodeGroupIndex={props.nodeGroupIndex}
                       setNodeGroups={props.setNodeGroups}
                       x1={x1}
                       y1={y1}
@@ -217,13 +206,12 @@ export const NodeView = (props: {
               } else {
                 return (
                   <InputOverlay
-                    index={props.index}
                     key={`${inputKey}`}
                     origin={nodeViewBoundingBox}
                     inputKey={inputKey}
                     boundingBoxes={boundingBoxes}
                     nodes={props.nodes}
-                    setNodes={props.setNodes}
+                    nodeGroupIndex={props.nodeGroupIndex}
                     setNodeGroups={props.setNodeGroups}
                     x1={x2}
                     y1={y2}
