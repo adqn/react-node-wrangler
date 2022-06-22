@@ -120,7 +120,7 @@ export const VisualNode = (props: {
         style={{
           position: "relative",
           display: "inline-block",
-          // left: `${150 + (props.index * 5)}px`,
+          left: `${props.index * 20}px`,
           minHeight: "150px",
           minWidth: "150px",
           border: "1px solid black",

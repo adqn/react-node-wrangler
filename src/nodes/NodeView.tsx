@@ -16,7 +16,6 @@ const SVGCanvas = (props: { children: any }) => {
         height: "100%",
         position: "absolute",
         bottom: 0,
-        // left: "0px",
         pointerEvents: "none",
       }}
     >
@@ -27,9 +26,7 @@ const SVGCanvas = (props: { children: any }) => {
         width="100%"
         height="100%"
         style={{
-          // position: "absolute",
           left: "0px",
-          // bottom: nodeViewHeight.heightDelta,
         }}
         pointerEvents={"none"}
       >
@@ -47,7 +44,7 @@ export const NodeView = (props: {
   setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>;
   setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
   setRenderIndex: (index: number) => void;
-  containerHeight: number[];
+  containerHeight: number | number[];
 }) => {
   const [boundingBoxes, setBoundingBoxes] = useState<boundingBoxes>({});
   const [ioRefs, setIoRefs] = useState<{ [key: string]: any }>({});
@@ -119,11 +116,7 @@ export const NodeView = (props: {
     <div
       className="NodeView"
       style={{
-        // position: "absolute",
-        // width: "100%",
         height: "100%",
-        // bottom: "0px",
-        // paddingTop: 30,
         borderTop: "2px solid grey",
         background: "lightgrey",
         overflow: "scroll",

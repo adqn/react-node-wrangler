@@ -1,8 +1,12 @@
 import { createContext } from "react";
+import { NodeDefinition } from "./baseNode";
 
-const NodeViewContext = createContext<{ height: number; heightDelta: number }>({
-  height: 0,
-  heightDelta: 0,
+const NodeViewContext = createContext<{
+  nodeGroups: Array<NodeDefinition[]>;
+  setNodeGroups: React.Dispatch<React.SetStateAction<NodeDefinition[][]>>;
+}>({
+  nodeGroups: [],
+  setNodeGroups: () => null,
 });
 
 export { NodeViewContext };

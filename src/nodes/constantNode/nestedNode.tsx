@@ -33,7 +33,8 @@ const NestedNodeRender = (props: {
   const [renderIndex, setRenderIndex] = useState<number>(
     props.nodes.length - 1
   );
-  const nodeViewHeight = useContext(NodeViewContext);
+  const [height, setHeight] = useState<number>(300);
+  const nodeGroupContext = useContext(NodeViewContext);
 
   return (
     <div
@@ -50,7 +51,7 @@ const NestedNodeRender = (props: {
       <Resizable
         style={{
           position: "absolute",
-          bottom: nodeViewHeight.height + 2,
+          bottom: 2,
         }}
         defaultSize={{
           height: 300,
@@ -67,13 +68,18 @@ const NestedNodeRender = (props: {
           topRight: false,
           topLeft: false,
         }}
+        onResize={(e, direction, ref, d) => {
+          setHeight(ref.clientHeight);
+        }}
       >
-        {/* <NodeView
-          nodeGroups={}
+        <NodeView
+          nodeGroupIndex={nodeGroupContext.nodeGroups.length - 1}
           nodes={props.nodes}
           setNodes={props.setNodes}
+          setNodeGroups={nodeGroupContext.setNodeGroups}
           setRenderIndex={setRenderIndex}
-        /> */}
+          containerHeight={height}
+        />
       </Resizable>
     </div>
   );
