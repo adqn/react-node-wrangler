@@ -219,7 +219,6 @@ export const VisualNode = (props: {
 export abstract class BaseNode {
   title: string;
   inputs: NodeInputs;
-  rendered?: boolean;
   attrs?: any;
   abstract validateInputs(nodes: BaseNode[]): void;
   abstract outputs(nodes: BaseNode[]): NodeOutputs;
@@ -289,14 +288,13 @@ export abstract class BaseNode {
   render(
     index: number,
     nodes: BaseNode[],
-    setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>,
-    rendered: boolean
+    setNodes: React.Dispatch<React.SetStateAction<NodeDefinition[]>>
   ): JSX.Element {
     return (
       <VisualNode
         index={index}
         title={this.title}
-        rendered={rendered}
+        rendered={true}
         nodes={nodes}
         setNodes={setNodes}
       />

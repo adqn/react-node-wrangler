@@ -74,7 +74,14 @@ const App = () => {
         overflow: "hidden",
       }}
     >
-      {nodes[renderIndex].render(renderIndex, nodes, setNodes, true)}
+      <div
+        className="RenderArea"
+        style={{
+          height: 500,
+        }}
+      >
+        {nodes[renderIndex].render(renderIndex, nodes, setNodes)}
+      </div>
       <div
         className="NodeViewArea"
         style={{
@@ -84,49 +91,42 @@ const App = () => {
           width: "100%",
         }}
       >
-        <NodeViewContext.Provider
-          value={{
-            nodeGroups,
-            setNodeGroups,
-          }}
-        >
-          {nodeGroups.map((nodeGroup, index) => {
-            const nodes = nodeGroup.map(createNode);
-            return (
-              <Resizable
-                defaultSize={{
-                  height: 300,
-                  width: "100%",
-                }}
-                minWidth={"100%"}
-                enable={{
-                  top: true,
-                  bottom: false,
-                  right: false,
-                  left: false,
-                  bottomRight: false,
-                  bottomLeft: false,
-                  topRight: false,
-                  topLeft: false,
-                }}
-                onResize={(e, direction, ref, d) => {
-                  const heights = [...nodeViewHeights];
-                  heights[index] = ref.clientHeight;
-                  setNodeViewHeights(heights);
-                }}
-              >
-                <NodeView
-                  nodeGroupIndex={index}
-                  nodes={nodes}
-                  setNodes={setNodes}
-                  setNodeGroups={setNodeGroups}
-                  setRenderIndex={setRenderIndex}
-                  containerHeight={nodeViewHeights}
-                />
-              </Resizable>
-            );
-          })}
-        </NodeViewContext.Provider>
+        {nodeGroups.map((nodeGroup, index) => {
+          const nodes = nodeGroup.map(createNode);
+          return (
+            <Resizable
+              defaultSize={{
+                height: 300,
+                width: "100%",
+              }}
+              minWidth={"100%"}
+              enable={{
+                top: true,
+                bottom: false,
+                right: false,
+                left: false,
+                bottomRight: false,
+                bottomLeft: false,
+                topRight: false,
+                topLeft: false,
+              }}
+              onResize={(e, direction, ref, d) => {
+                const heights = [...nodeViewHeights];
+                heights[index] = ref.clientHeight;
+                setNodeViewHeights(heights);
+              }}
+            >
+              <NodeView
+                nodeGroupIndex={index}
+                nodes={nodes}
+                setNodes={setNodes}
+                setNodeGroups={setNodeGroups}
+                setRenderIndex={setRenderIndex}
+                containerHeight={nodeViewHeights}
+              />
+            </Resizable>
+          );
+        })}
       </div>
     </div>
   );
